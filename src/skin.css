@@ -5307,17 +5307,18 @@ body[data-eva-pilot="00"] .eva-gate__bg {
    --------------------------------------------------------------------- */
 .eva-switch {
   position: fixed;
-  left: 14px;
-  top: 82px;
+  left: 246px;
+  top: 76px;
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: 7px;
-  width: 252px;
-  height: 28px;
-  padding: 0 8px 0 7px;
+  justify-content: center;
+  gap: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   border: 1px solid var(--dsw-alias-border-l2);
-  background: linear-gradient(90deg, var(--dsw-alias-bg-layer-1), var(--dsw-alias-bg-base));
+  background: linear-gradient(180deg, var(--dsw-alias-bg-layer-1), var(--dsw-alias-bg-base));
   color: var(--dsw-alias-label-primary);
   font-family: var(--eva-font-hud);
   text-align: left;
@@ -5325,6 +5326,49 @@ body[data-eva-pilot="00"] .eva-gate__bg {
   pointer-events: auto;
   clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+.eva-switch::before {
+  content: "切换驾驶员 / SWITCH PILOT";
+  position: absolute;
+  right: 0;
+  top: 34px;
+  padding: 3px 6px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+}
+.eva-switch:hover::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+.eva-switch::after {
+  content: "↻";
+  position: absolute;
+  right: 1px;
+  bottom: -1px;
+  padding: 0 2px;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--eva-accent);
+  background: var(--dsw-alias-bg-layer-1);
+}
+.eva-switch__led,
+.eva-switch__body,
+.eva-switch__unit {
+  display: none;
+}
+.eva-switch__avatar {
+  width: 20px;
+  height: 20px;
+  border: 0;
 }
 .eva-switch:hover {
   border-color: var(--eva-pilot);
@@ -5365,11 +5409,11 @@ body[data-eva-pilot="00"] .eva-gate__bg {
   white-space: nowrap;
 }
 .eva-switch__avatar {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   flex: none;
   overflow: hidden;
-  border: 1px solid var(--dsw-alias-border-l2);
+  border: 0;
 }
 body:has([data-collapsed="true"]) .eva-switch {
   display: none;

@@ -130,6 +130,7 @@ window.__ModuleLoader__.load({
     const berserkBurstSignal = createSignal(0);
     const soundSignal = createSignal(readSound());
     const captionSignal = createSignal(null);
+    const pilotSwitchSignal = createSignal(0);
 
     /* __EVA_AUDIO__ */
 
@@ -263,6 +264,10 @@ window.__ModuleLoader__.load({
       setPilot(key);
       sayIntro(key);
       if (soundSignal.get()) audio.unlock();
+    }
+
+    function openPilotSwitch() {
+      pilotSwitchSignal.set(pilotSwitchSignal.get() + 1);
     }
 
     function cyclePilot() {
@@ -1121,6 +1126,28 @@ window.__ModuleLoader__.load({
           'BERSERK / 暴走 · ' + (unit === 'asuka' ? 'UNIT-02' : 'UNIT-01')));
     }
 
+    /* Floating "switch pilot" control above the sidebar's new-conversation
+     * button. Opens the entry-plug gate again. */
+    function PilotSwitchButton() {
+      const pilot = usePilot();
+      return h('button', {
+        type: 'button',
+        className: 'eva-switch',
+        title: '切换驾驶员 / SWITCH PILOT',
+        'aria-label': '切换驾驶员',
+        onClick: () => {
+          audio.sfx('beep');
+          openPilotSwitch();
+        },
+      },
+        h('span', { className: 'eva-switch__led' }),
+        h('span', { className: 'eva-switch__body' },
+          h('b', null, '切换驾驶员'),
+          h('em', null, 'SWITCH PILOT')),
+        h('span', { className: 'eva-switch__unit' }, 'EVA-' + pilot.unit),
+        h(PilotImage, { pilot, kind: 'avatar', className: 'eva-switch__avatar' }));
+    }
+
     function Hud() {
       const fx = useSignal(fxSignal);
       const berserk = useSignal(berserkSignal);
@@ -1167,6 +1194,16 @@ window.__ModuleLoader__.load({
       useEffect(() => {
         audio.setBerserk(berserkSignal.get());
       }, []);
+
+      useEffect(() => pilotSwitchSignal.subscribe(() => {
+        setAlarm(false);
+        setGate(true);
+        setRun(-1);
+        setFinished(-1);
+        setBerserkArt(null);
+        audio.stopBoot();
+        audio.stopAngel();
+      }), []);
 
       useEffect(() => {
         if (berserk === lastBerserk.current) return;
@@ -1273,6 +1310,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' }),
           berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
+        !alarm && !gate && !playing && finished !== -1 ? h(PilotSwitchButton) : null,
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing

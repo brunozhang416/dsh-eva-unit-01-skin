@@ -1310,7 +1310,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' }),
           berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
-        !alarm && !gate && !playing && finished !== -1 ? h(PilotSwitchButton) : null,
+        !alarm && !gate && !playing ? h(PilotSwitchButton) : null,
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing

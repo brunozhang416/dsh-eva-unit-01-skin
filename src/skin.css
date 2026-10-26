@@ -5307,9 +5307,9 @@ body[data-eva-pilot="00"] .eva-gate__bg {
    --------------------------------------------------------------------- */
 .eva-switch {
   position: fixed;
-  left: 246px;
-  top: 76px;
-  z-index: 40;
+  left: 232px;
+  top: 60px;
+  z-index: 60;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -132,6 +132,7 @@ window.__ModuleLoader__.load({
     const captionSignal = createSignal(null);
     const pilotSwitchSignal = createSignal(0);
     const cockpitOpenSignal = createSignal(false);
+    let pendingPilotKey = null;
     const balanceSignal = createSignal({ state: 'loading' });
     let balanceFeedTimer = 0;
 
@@ -1022,6 +1023,12 @@ function createEvaAudio() {
     }
 
     function openPilotSwitch() {
+      pendingPilotKey = null;
+      pilotSwitchSignal.set(pilotSwitchSignal.get() + 1);
+    }
+
+    function openPilotSwitchFor(key) {
+      pendingPilotKey = PILOTS[key] ? key : null;
       pilotSwitchSignal.set(pilotSwitchSignal.get() + 1);
     }
 
@@ -1453,8 +1460,10 @@ function createEvaAudio() {
       const pilot = usePilot();
       const reduced = reduceMotion();
       const scenes = reduced ? STATIC_SCENES : FULL_SCENES;
+      const startIndex = Math.max(0, scenes.findIndex((scene) => scene.id === props.startScene));
+      const skipMs = scenes.slice(0, startIndex).reduce((sum, scene) => sum + scene.ms, 0);
       const total = scenes.reduce((sum, scene) => sum + scene.ms, 0);
-      const [elapsed, setElapsed] = useState(0);
+      const [elapsed, setElapsed] = useState(skipMs);
       const [leaving, setLeaving] = useState(false);
       const done = useRef(false);
       const timer = useRef(0);
@@ -1468,9 +1477,9 @@ function createEvaAudio() {
       };
 
       useEffect(() => {
-        const started = performance.now();
+        const started = performance.now() - skipMs;
         let frame = 0;
-        let painted = -1;
+        let painted = skipMs;
         const tick = (now) => {
           const next = Math.min(total, now - started);
           if (next - painted > 33 || next >= total) {
@@ -1688,6 +1697,15 @@ function createEvaAudio() {
       const [sync, setSync] = useState(0);
       const [ready, setReady] = useState(false);
       const started = useRef(false);
+
+      // Returning from the cockpit panel: preselect the clicked pilot and let
+      // the selected-pilot loading display play before boarding. This is not
+      // the empty selection screen and does not switch the chat UI directly.
+      useEffect(() => {
+        if (!props.preselect || !PILOTS[props.preselect]) return;
+        setPicked(true);
+        choosePilot(props.preselect);
+      }, []);
 
       const begin = (withSound) => {
         if (started.current || !picked || !ready) return;
@@ -2326,9 +2344,9 @@ function createEvaAudio() {
               type: 'button',
               'aria-pressed': pilot.key === key ? 'true' : 'false',
               onClick: () => {
-                if (pilot.key === key) return;
                 audio.sfx('beep');
-                choosePilot(key);
+                cockpitOpenSignal.set(false);
+                openPilotSwitchFor(key);
               },
             },
               h('b', null, PILOTS[key].name),
@@ -2532,7 +2550,7 @@ function createEvaAudio() {
           berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
         !alarm && !gate && !playing ? h(React.Fragment, null, h(CockpitPanel), h(PilotToggle)) : null,
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
-          : gate ? h(PilotGate, { onStart: startFromGate }) : null,
+          : gate ? h(PilotGate, { onStart: startFromGate, preselect: pendingPilotKey }) : null,
         playing
           ? h(LaunchSequence, {
               key: run,

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" fill="none" color="#FFB347" role="img" aria-label="AT-field hexagon line motif">
+  <!-- concentric hexagon rings: a wireframe gate backdrop. All strokes are
+       currentColor, so the surrounding CSS color token recolours the whole motif -->
+  <g stroke="currentColor" stroke-linejoin="miter" stroke-width="2">
+    <path d="M120 6 218.7 63 218.7 177 120 234 21.3 177 21.3 63Z" opacity=".22"/>
+    <path d="M120 34 186.5 72.4 186.5 149.6 120 188 53.5 149.6 53.5 72.4Z" opacity=".3"/>
+    <path d="M120 60 153.9 79.6 153.9 118.8 120 138.4 86.1 118.8 86.1 79.6Z" opacity=".4"/>
+  </g>
+  <!-- radial spokes between the rings -->
+  <g stroke="currentColor" stroke-width="1.5" opacity=".28">
+    <path d="M120 6V34M120 188V234M21.3 63 53.5 72.4M186.5 72.4 218.7 63M21.3 177 53.5 149.6M186.5 149.6 218.7 177"/>
+  </g>
+  <!-- centre cross of light -->
+  <g stroke="currentColor" stroke-width="2" opacity=".55">
+    <path d="M104 120H136M120 104V136"/>
+  </g>
+</svg>

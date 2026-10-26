@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" width="240" height="320" fill="none" role="img" aria-label="Original half-body pilot portrait: nervous boy in a white and blue plugsuit with red collar, round chest unit, A10 clips and one raised gloved hand">
+  <defs>
+    <!-- the one permitted gradient: subtle shading on the suit torso only -->
+    <linearGradient id="pilotSuitGrade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3F73F0"/>
+      <stop offset="1" stop-color="#27479E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 01 very faint AT-field motif: two hexagon rings + cross of light, behind everything -->
+  <g stroke="#FFB347" stroke-linejoin="miter">
+    <g opacity=".13" stroke-width="1.5">
+      <path d="M120 76 182.4 112 182.4 184 120 220 57.6 184 57.6 112Z"/>
+      <path d="M120 40 213.5 94 213.5 202 120 256 26.5 202 26.5 94Z"/>
+    </g>
+    <path d="M120 30V300M30 150H210" opacity=".07" stroke-width="1.5"/>
+  </g>
+
+  <!-- 02 corner HUD ticks only -->
+  <g stroke="#6B5F80" stroke-width="2" opacity=".6" stroke-linecap="square">
+    <path d="M16 46V16h30M224 46V16h-30M16 274v30h30M224 274v30h-30"/>
+  </g>
+  <g fill="#FFB347" opacity=".85">
+    <path d="M20 20h4v4h-4zM216 20h4v4h-4zM20 296h4v4h-4zM216 296h4v4h-4z"/>
+  </g>
+
+  <!-- 03 blue torso + shoulder plates (the side panels of the suit) -->
+  <path d="M78 190H162L178 232 182 320H58L62 232Z" fill="url(#pilotSuitGrade)" stroke="#6FA8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M62 238 76 206 98 196 106 214 84 228 72 248Z" fill="#2F5FE0" stroke="#6FA8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M178 238 164 206 142 196 134 214 156 228 168 248Z" fill="#2F5FE0" stroke="#6FA8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M86 212 96 205 100 212 90 219Z" fill="#EAF0FA"/>
+  <path d="M154 212 144 205 140 212 150 219Z" fill="#EAF0FA"/>
+  <path d="M72 234 82 220M168 234 158 220" stroke="#BFD8FF" stroke-width="2"/>
+  <path d="M68 236 80 212M172 236 160 212" stroke="#FF2D2D" stroke-width="2"/>
+
+  <!-- 04 white front torso plate + red side piping -->
+  <path d="M92 198H148L158 240 154 320H86L82 240Z" fill="#EAF0FA" stroke="#BFD8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M91 200 81 240 85 320M149 200 159 240 155 320" stroke="#FF2D2D" stroke-width="2.5"/>
+
+  <!-- 05 neck (extends behind the collar so skin shows through the ring) -->
+  <path d="M102 132H138L143 200H97Z" fill="#DCC0AC" stroke="#B08A72" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M104 140H136" stroke="#C9A98F" stroke-width="2.5"/>
+
+  <!-- 06 red collar ring with a steel latch -->
+  <path d="M96 164H144L154 200H86ZM106 175H134L138 191H102Z" fill="#FF2D2D" fill-rule="evenodd" stroke="#1A0B2E" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M108 193H132L128 203H112Z" fill="#6B7488" stroke="#BFD8FF" stroke-width="2"/>
+
+  <!-- 07 round chest interface unit: dark bezel, orange ring, amber core -->
+  <path d="M120 226 134 232 140 246 134 260 120 266 106 260 100 246 106 232Z"
+        fill="#1A0B2E" stroke="#BFD8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M120 233 129 237 133 246 129 255 120 259 111 255 107 246 111 237Z" fill="#FF6B1A"/>
+  <circle cx="120" cy="246" r="5.5" fill="#FFB347"/>
+  <path d="M120 220V226M120 266V272M94 246H100M140 246H146" stroke="#BFD8FF" stroke-width="2"/>
+
+  <!-- 08 "01" chest marking (vector strokes, no font) -->
+  <path d="M96 208 106 208 107 215 106 222 96 222 95 215Z" stroke="#6B7488" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M115 222V208L111 211.5" stroke="#6B7488" stroke-width="2.5" stroke-linejoin="miter"/>
+
+  <!-- 09 right A10 cable: temple clip to a plug clamped on the shoulder plate -->
+  <path d="M174 102 180 132 186 160 176 186 162 206" stroke="#6B7488" stroke-width="3" stroke-linejoin="miter"/>
+  <path d="M178 136 184 137 183 143 177 142ZM180 160 186 161 185 167 179 166Z" fill="#6B7488" stroke="#BFD8FF" stroke-width="1.5"/>
+  <path d="M154 204H168L170 214H152Z" fill="#6B7488" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M184 146h5v5h-5z" fill="#FFB347"/>
+
+  <!-- 10 head (same construction as pilot-avatar, scaled 1.5x) -->
+  <g transform="translate(30.5 31) scale(1.5)">
+    <!-- hair back mass -->
+    <path d="M60 2 84 8 93 28 92 52 86 46 84 56 78 50 42 50 36 56 34 46 28 52 27 28 36 8Z"
+          fill="#5C3323" stroke="#3F2116" stroke-width="1.5" stroke-linejoin="miter"/>
+    <!-- pale angular face -->
+    <path d="M60 16 76 20 84 33 83 49 78 62 70 71 60 78 50 71 42 62 37 49 36 33 44 20Z"
+          fill="#F0E2D4" stroke="#C9A98F" stroke-width="1.5" stroke-linejoin="miter"/>
+    <!-- ears -->
+    <path d="M36 43 30 41 30 52 37 53Z" fill="#EAD3BF" stroke="#C9A98F" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M84 43 90 41 90 52 83 53Z" fill="#EAD3BF" stroke="#C9A98F" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M33 45V50M87 45V50" stroke="#C9A98F" stroke-width="1.5"/>
+    <!-- jagged fringe -->
+    <path d="M37 33 40 17 52 11 59 19 65 12 78 14 87 24 89 35 82 31 80 22 73 25 75 34 68 27 65 20 61 29 57 21 52 30 47 24 43 34Z"
+          fill="#5C3323" stroke="#3F2116" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M45 19 53 14M67 15 77 19" stroke="#7C472C" stroke-width="2"/>
+    <!-- hesitant brows -->
+    <path d="M43 36.5 57 39.5" stroke="#3F2116" stroke-width="2.5" stroke-linecap="butt"/>
+    <path d="M77 37 63 41.5" stroke="#3F2116" stroke-width="2.8" stroke-linecap="butt"/>
+    <!-- eyes -->
+    <path d="M45 46 58 44.5 57.5 52.5 47 54Z" fill="#FFFBF4"/>
+    <path d="M48.5 47.5 55.5 46.2 55.5 51.3 49 52.6Z" fill="#3A2418"/>
+    <path d="M75 46 62 44.5 62.5 52.5 73 54Z" fill="#FFFBF4"/>
+    <path d="M71.5 47.5 64.5 46.2 64.5 51.3 71 52.6Z" fill="#3A2418"/>
+    <!-- nose + small uncertain mouth -->
+    <path d="M60 52V57L62.5 59.8" stroke="#C0917A" stroke-width="2" stroke-linejoin="miter"/>
+    <path d="M55.5 65.5 60 64.8 64.5 65.8 60 67.6Z" fill="#B5735C"/>
+    <!-- A10 clips: white body, orange tip, steel antenna -->
+    <path d="M29 29 39 26 45 36 37 44 28 40Z" fill="#EAF0FA" stroke="#6B7488" stroke-width="2" stroke-linejoin="miter"/>
+    <path d="M34 38 39 35 41 39 37 43Z" fill="#FF6B1A"/>
+    <path d="M28 29 24 22M28 40 24 46" stroke="#6B7488" stroke-width="2.5"/>
+    <path d="M91 29 81 26 75 36 83 44 92 40Z" fill="#EAF0FA" stroke="#6B7488" stroke-width="2" stroke-linejoin="miter"/>
+    <path d="M86 38 81 35 79 39 83 43Z" fill="#FF6B1A"/>
+    <path d="M92 29 96 22M92 40 96 46" stroke="#6B7488" stroke-width="2.5"/>
+  </g>
+
+  <!-- 11 raised gloved hand: fingers, cuff, palm, thumb, sleeve -->
+  <path d="M52 156V128H58V156Z" fill="#2F5FE0" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M59 156V121H65V156Z" fill="#2F5FE0" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M66 157V125H72V157Z" fill="#2F5FE0" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M73 158V134H78V158Z" fill="#2F5FE0" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M38 196H76L78 210H36Z" fill="#EAF0FA" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M38 198H76" stroke="#FF2D2D" stroke-width="1.5"/>
+  <path d="M56 198H74L75 206H58Z" fill="#6B7488"/>
+  <path d="M44 200 74 196 82 178 78 158 56 154 42 170Z" fill="#2F5FE0" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M40 172 48 164 55 174 45 182Z" fill="#2F5FE0" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M24 320 40 282 42 248 48 214 72 210 80 226 58 242 54 276 62 320Z" fill="#27479E" stroke="#6FA8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M34 300 40 288M50 256 54 244" stroke="#BFD8FF" stroke-width="2"/>
+
+  <!-- 12 SDAT player clipped at the hip (small, optional prop) -->
+  <path d="M166 262V284" stroke="#6B7488" stroke-width="2.5"/>
+  <path d="M168 276H176V284H168Z" fill="#6B7488" stroke="#BFD8FF" stroke-width="1.5"/>
+  <path d="M156 284H180L182 310H154Z" fill="#6B7488" stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M160 290H176L177 300H159Z" fill="#1A0B2E"/>
+  <circle cx="164" cy="295" r="2.6" fill="#050409"/>
+  <circle cx="172" cy="295" r="2.6" fill="#050409"/>
+  <circle cx="164" cy="295" r="1" fill="#FFB347"/>
+  <circle cx="172" cy="295" r="1" fill="#FFB347"/>
+  <path d="M158 305H178" stroke="#EAF0FA" stroke-width="2"/>
+</svg>

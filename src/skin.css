@@ -359,6 +359,7 @@ body {
   animation: eva-scene-in 0.3s ease-out both;
 }
 .eva-launch[data-scene="boot"] .eva-scene--boot,
+.eva-launch[data-scene="pilot"] .eva-scene--pilot,
 .eva-launch[data-scene="plug"] .eva-scene--plug,
 .eva-launch[data-scene="insert"] .eva-scene--insert,
 .eva-launch[data-scene="neural"] .eva-scene--neural,
@@ -1452,6 +1453,9 @@ body {
   --eva-alarm: #c21212;
   --eva-alarm-soft: rgba(194, 18, 18, 0.1);
   --eva-alert-bg: rgba(255, 250, 248, 0.92);
+  --eva-pilot: #2f5fe0;
+  --eva-pilot-soft: rgba(47, 95, 224, 0.1);
+  --eva-pilot-glow: rgba(47, 95, 224, 0.2);
   --eva-accent: #6a1fa8;
   --eva-accent-strong: #4b1d7a;
   --eva-accent-soft: rgba(106, 31, 168, 0.1);
@@ -1545,6 +1549,9 @@ body[data-ds-dark-theme] {
   --eva-alarm: #ff3b3b;
   --eva-alarm-soft: rgba(255, 59, 59, 0.12);
   --eva-alert-bg: rgba(40, 5, 8, 0.82);
+  --eva-pilot: #6fa8ff;
+  --eva-pilot-soft: rgba(111, 168, 255, 0.12);
+  --eva-pilot-glow: rgba(111, 168, 255, 0.22);
   --eva-accent: #9dff4a;
   --eva-accent-strong: #c6ff00;
   --eva-accent-soft: rgba(157, 255, 74, 0.08);
@@ -3475,5 +3482,1330 @@ body:has([data-collapsed="true"]) .eva-foot__label {
   .eva-hud__glitch::after,
   .eva-hud__glitch::before {
     animation: none !important;
+  }
+}
+
+
+/* =====================================================================
+   PILOT LAYER — Shinji-style pilot authentication, portrait widget,
+   voice-caption bubble and the extra pilot scene inside the launch.
+   Original artwork only (art/pilot-*.svg); voice is system TTS.
+   ===================================================================== */
+
+/* --- pilot authentication gate (shown before the launch) --- */
+.eva-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  pointer-events: auto;
+  background: #05040a;
+  color: #e9e2f5;
+  font-family: var(--eva-font-hud);
+  animation: eva-fade-in 0.2s ease-out both;
+}
+.eva-gate__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(90% 70% at 24% 28%, rgba(47, 95, 224, 0.22), transparent 60%),
+    radial-gradient(70% 60% at 78% 76%, rgba(122, 47, 176, 0.24), transparent 62%),
+    linear-gradient(180deg, #05040a, #0a0616 58%, #05040a);
+}
+.eva-gate__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(157, 255, 74, 0.06) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(90deg, rgba(157, 255, 74, 0.045) 0 1px, transparent 1px 40px);
+  -webkit-mask-image: radial-gradient(78% 78% at 50% 50%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(78% 78% at 50% 50%, #000 34%, transparent 100%);
+}
+.eva-gate__top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(157, 255, 74, 0.18);
+  background: linear-gradient(180deg, rgba(5, 4, 10, 0.94), rgba(5, 4, 10, 0));
+}
+.eva-gate__mark {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+}
+.eva-gate__mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-gate__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1;
+}
+.eva-gate__brand b {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: #f3edff;
+}
+.eva-gate__brand em {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.24em;
+  color: rgba(157, 255, 74, 0.7);
+}
+.eva-gate__audio {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid rgba(111, 168, 255, 0.35);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: rgba(233, 226, 245, 0.6);
+}
+.eva-gate__audioLed {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--eva-pilot);
+  box-shadow: 0 0 8px var(--eva-pilot);
+  animation: eva-pilot-heart 1.6s ease-in-out infinite;
+}
+.eva-gate__body {
+  position: absolute;
+  inset: 54px 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(32px, 6vw, 96px);
+  padding: 0 6vw;
+}
+.eva-gate__pilot {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.eva-gate__portraitFrame {
+  position: relative;
+  display: block;
+  width: min(220px, 20vw);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid rgba(111, 168, 255, 0.4);
+  background: radial-gradient(80% 80% at 50% 30%, rgba(47, 95, 224, 0.28), rgba(5, 4, 10, 0.85));
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+.eva-gate__portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: eva-pilot-breathe 4.6s ease-in-out infinite;
+}
+.eva-gate__portrait svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-gate__pilotMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.eva-gate__pilotMeta > b {
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  color: #f3edff;
+}
+.eva-gate__pilotMeta > span {
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: rgba(111, 168, 255, 0.85);
+}
+.eva-gate__rows {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.eva-gate__rows span {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  width: 192px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(185, 139, 224, 0.18);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(233, 226, 245, 0.45);
+}
+.eva-gate__rows b {
+  font-weight: 600;
+  color: var(--eva-pilot);
+}
+.eva-gate__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 520px;
+}
+.eva-gate__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  color: rgba(157, 255, 74, 0.8);
+}
+.eva-gate__title {
+  font-family: var(--eva-font-display);
+  font-size: clamp(44px, 5.4vw, 76px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  color: #f3edff;
+  text-shadow: 0 0 30px rgba(111, 168, 255, 0.25);
+}
+.eva-gate__sub {
+  font-size: 9px;
+  letter-spacing: 0.5em;
+  color: rgba(185, 139, 224, 0.85);
+}
+.eva-gate__line {
+  width: min(420px, 32vw);
+  height: 1px;
+  background: linear-gradient(90deg, var(--eva-pilot), transparent);
+  opacity: 0.6;
+}
+.eva-gate__start {
+  pointer-events: auto;
+  cursor: pointer;
+  appearance: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-top: 8px;
+  padding: 14px 30px;
+  border: 1px solid var(--eva-pilot);
+  background: linear-gradient(180deg, rgba(47, 95, 224, 0.35), rgba(5, 4, 10, 0.9));
+  color: #f3edff;
+  font-family: var(--eva-font-hud);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  box-shadow: 0 0 24px rgba(111, 168, 255, 0.2);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.eva-gate__start em {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.24em;
+  color: var(--eva-pilot);
+}
+.eva-gate__start:hover {
+  background: linear-gradient(180deg, rgba(47, 95, 224, 0.55), rgba(5, 4, 10, 0.9));
+  box-shadow: 0 0 30px rgba(111, 168, 255, 0.32);
+}
+.eva-gate__muted {
+  pointer-events: auto;
+  cursor: pointer;
+  appearance: none;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: rgba(233, 226, 245, 0.45);
+  font-family: var(--eva-font-hud);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+.eva-gate__muted:hover {
+  color: var(--eva-pilot);
+}
+.eva-gate__hint {
+  font-size: 8px;
+  letter-spacing: 0.24em;
+  color: rgba(157, 255, 74, 0.5);
+}
+.eva-gate__foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-top: 1px solid rgba(157, 255, 74, 0.16);
+  background: linear-gradient(0deg, rgba(5, 4, 10, 0.92), rgba(5, 4, 10, 0));
+  font-size: 8.5px;
+  letter-spacing: 0.24em;
+  color: rgba(157, 255, 74, 0.55);
+}
+
+/* --- pilot scene inside the launch --- */
+.eva-pilotbrief {
+  position: relative;
+  width: min(220px, 20vw);
+  aspect-ratio: 3 / 4;
+}
+.eva-pilotbrief__frame {
+  position: absolute;
+  inset: -10px;
+  border: 1px solid rgba(111, 168, 255, 0.35);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+.eva-pilotbrief__portrait {
+  position: absolute;
+  inset: 0;
+  display: block;
+  animation: eva-pilot-breathe 4.6s ease-in-out infinite;
+}
+.eva-pilotbrief__portrait svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-pilotbrief__a10 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -34px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: rgba(233, 226, 245, 0.55);
+}
+.eva-pilotbrief__clip {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--eva-pilot);
+}
+.eva-pilotbrief__clip svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-pilotbrief__a10 b {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--eva-pilot);
+}
+
+/* --- persistent pilot widget --- */
+.eva-pilotcard {
+  position: absolute;
+  top: 58px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 210px;
+  padding: 8px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: linear-gradient(120deg, var(--dsw-alias-bg-layer-1), var(--dsw-alias-bg-base));
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  pointer-events: none;
+}
+.eva-pilotcard::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(111, 168, 255, 0.2);
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  pointer-events: none;
+}
+.eva-pilotcard__avatar {
+  position: relative;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  animation: eva-pilot-breathe 4.6s ease-in-out infinite;
+}
+.eva-pilotcard__avatar svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-pilotcard__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.eva-pilotcard__name {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--dsw-alias-label-primary);
+}
+.eva-pilotcard__role {
+  font-size: 7.5px;
+  letter-spacing: 0.2em;
+  color: rgba(111, 168, 255, 0.85);
+}
+.eva-pilotcard__sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--dsw-alias-label-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.eva-pilotcard__sync i {
+  font-style: normal;
+  color: var(--eva-pilot);
+  animation: eva-pilot-heart 1.6s ease-in-out infinite;
+}
+.eva-pilotcard__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 22px;
+  margin-left: auto;
+  flex: none;
+}
+.eva-pilotcard__bars i {
+  width: 2px;
+  height: calc(30% + var(--i) * 11%);
+  background: var(--eva-pilot);
+  opacity: 0.85;
+  animation: eva-pilot-bars 1.4s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.12s);
+}
+
+/* --- pilot voice captions --- */
+.eva-comm {
+  position: fixed;
+  z-index: 10001;
+  top: 128px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 304px;
+  padding: 9px 12px;
+  border: 1px solid rgba(111, 168, 255, 0.45);
+  background: linear-gradient(180deg, rgba(10, 8, 22, 0.92), rgba(5, 4, 10, 0.95));
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  box-shadow: 0 0 24px rgba(111, 168, 255, 0.2);
+  animation: eva-comm-in 0.24s ease-out both;
+}
+.eva-comm__avatar {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.eva-comm__avatar svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-comm__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+.eva-comm__who {
+  font-size: 7.5px;
+  letter-spacing: 0.22em;
+  color: var(--eva-pilot);
+}
+.eva-comm__jp {
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: #f3edef;
+}
+.eva-comm__zh {
+  font-size: 9.5px;
+  letter-spacing: 0.03em;
+  color: rgba(233, 226, 245, 0.5);
+}
+
+/* --- status-bar pilot segment + sound switch --- */
+.eva-status__pilot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dsw-alias-label-secondary);
+}
+.eva-status__pilotAvatar {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+.eva-status__pilotAvatar svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-status__pilot b {
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--eva-pilot);
+}
+.eva-status__heart {
+  font-style: normal;
+  color: var(--eva-pilot);
+  animation: eva-pilot-heart 1.6s ease-in-out infinite;
+}
+.eva-foot__btn[data-sound="1"] .eva-foot__glyph {
+  color: var(--eva-pilot);
+}
+.eva-foot__btn[data-sound="0"] {
+  opacity: 0.55;
+}
+
+/* --- berserk variants --- */
+body[data-eva-berserk] .eva-pilotcard {
+  border-color: var(--eva-alarm);
+  box-shadow: 0 0 24px var(--eva-alarm-soft);
+}
+body[data-eva-berserk] .eva-pilotcard::before {
+  border-color: rgba(255, 59, 59, 0.35);
+}
+body[data-eva-berserk] .eva-pilotcard__role,
+body[data-eva-berserk] .eva-pilotcard__sync i,
+body[data-eva-berserk] .eva-pilotcard__bars i {
+  color: var(--eva-alarm);
+  background: var(--eva-alarm);
+}
+body[data-eva-berserk] .eva-pilotcard__avatar {
+  filter: hue-rotate(150deg) saturate(1.1) brightness(0.95);
+}
+body[data-eva-berserk] .eva-comm {
+  border-color: var(--eva-alarm);
+  box-shadow: 0 0 24px var(--eva-alarm-soft);
+}
+body[data-eva-berserk] .eva-status__pilot b,
+body[data-eva-berserk] .eva-status__heart {
+  color: var(--eva-alarm);
+}
+body[data-eva-berserk] .eva-foot__btn[data-sound="1"] .eva-foot__glyph {
+  color: var(--eva-alarm);
+}
+
+/* --- pilot motion --- */
+@keyframes eva-pilot-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-1.5px) scale(1.015);
+  }
+}
+@keyframes eva-pilot-heart {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  30% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+@keyframes eva-pilot-bars {
+  from {
+    height: 16%;
+    opacity: 0.4;
+  }
+  to {
+    height: 100%;
+    opacity: 0.95;
+  }
+}
+@keyframes eva-comm-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .eva-pilotcard,
+  .eva-comm {
+    display: none;
+  }
+  .eva-gate__body {
+    flex-direction: column;
+    gap: 26px;
+  }
+  .eva-gate__pilot {
+    gap: 14px;
+  }
+  .eva-gate__portraitFrame {
+    width: 132px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eva-gate__portrait,
+  .eva-gate__audioLed,
+  .eva-pilotbrief__portrait,
+  .eva-pilotcard__avatar,
+  .eva-pilotcard__sync i,
+  .eva-pilotcard__bars i,
+  .eva-status__heart,
+  .eva-comm {
+    animation: none !important;
+  }
+}
+
+body:not(:has([data-slot="conversation.composer"])) .eva-pilotcard,
+body:not(:has([data-slot="conversation.composer"])) .eva-comm {
+  display: none;
+}
+
+/* pilot chip inside the sync rail (replaces the floating card) */
+.eva-rail__pilot {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-right: 2px;
+  color: var(--dsw-alias-label-secondary);
+  flex: none;
+}
+.eva-rail__pilotAvatar {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.eva-rail__pilotAvatar svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.eva-rail__pilot b {
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--dsw-alias-label-primary);
+}
+.eva-rail__heart {
+  font-style: normal;
+  color: var(--eva-pilot);
+  animation: eva-pilot-heart 1.6s ease-in-out infinite;
+}
+.eva-rail__pilotSync {
+  color: var(--eva-pilot);
+  font-variant-numeric: tabular-nums;
+}
+body[data-eva-berserk] .eva-rail__heart,
+body[data-eva-berserk] .eva-rail__pilotSync {
+  color: var(--eva-alarm);
+}
+
+/* NERV workbench strip above the composer */
+.eva-desk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  margin: 0 0 5px;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: linear-gradient(90deg, var(--dsw-alias-bg-layer-1), var(--dsw-alias-bg-base));
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  font-family: var(--eva-font-hud);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dsw-alias-label-secondary);
+}
+.eva-desk__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--eva-accent);
+  white-space: nowrap;
+}
+.eva-desk__tag b {
+  letter-spacing: 0.3em;
+}
+.eva-desk__tag i {
+  font-style: normal;
+  font-size: 7px;
+  letter-spacing: 0.22em;
+  opacity: 0.55;
+}
+.eva-desk__cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 16px;
+  padding: 0 8px;
+  border: 0;
+  border-left: 1px solid var(--dsw-alias-border-l1);
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  white-space: nowrap;
+}
+.eva-desk__cell i {
+  font-style: normal;
+  font-size: 7px;
+  letter-spacing: 0.2em;
+  opacity: 0.45;
+}
+.eva-desk__value {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--dsw-alias-label-primary);
+  font-variant-numeric: tabular-nums;
+}
+.eva-desk__cell--balance .eva-desk__value {
+  color: var(--eva-accent);
+}
+.eva-desk__refresh {
+  appearance: none;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--dsw-alias-label-secondary);
+  font-family: var(--eva-font-hud);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.eva-desk__refresh:hover {
+  color: var(--eva-accent);
+}
+.eva-desk__cell--music {
+  cursor: pointer;
+  pointer-events: auto;
+}
+.eva-desk__cell--music:hover .eva-desk__value {
+  color: var(--eva-accent);
+}
+.eva-desk__bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+  margin-left: 2px;
+}
+.eva-desk__bars i {
+  width: 2px;
+  height: 30%;
+  background: var(--eva-accent);
+  opacity: 0.75;
+  animation: eva-desk-bars 1.2s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.11s);
+}
+.eva-desk__bars--tps i {
+  background: var(--eva-pilot);
+}
+@keyframes eva-desk-bars {
+  from {
+    height: 20%;
+    opacity: 0.35;
+  }
+  to {
+    height: 100%;
+    opacity: 0.9;
+  }
+}
+@media (max-width: 900px) {
+  .eva-desk__tag,
+  .eva-desk__cell:nth-last-child(2) {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eva-desk__bars i {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+   PILOT-SPECIFIC UNIT PAGES — 01 Shinji / 02 Asuka / 03 Rei.
+   `data-eva-pilot` is set from the client module; token palettes swap in JS.
+   ===================================================================== */
+body[data-eva-pilot="02"] {
+  --eva-accent: #ff7a1a;
+  --eva-accent-deep: #c22a12;
+  --eva-pilot: #ff5a3c;
+  --eva-pilot-soft: rgba(255, 90, 60, 0.12);
+  --eva-pilot-glow: rgba(255, 90, 60, 0.22);
+}
+body[data-eva-pilot="02"][data-ds-dark-theme] {
+  --eva-accent: #ff8a2a;
+  --eva-accent-deep: #ff5a1a;
+  --eva-pilot: #ff7a6a;
+  --eva-pilot-soft: rgba(255, 122, 106, 0.12);
+  --eva-pilot-glow: rgba(255, 122, 106, 0.22);
+}
+body[data-eva-pilot="00"] {
+  --eva-accent: #2c6f96;
+  --eva-accent-deep: #1d4f6b;
+  --eva-pilot: #3d7ea6;
+  --eva-pilot-soft: rgba(61, 126, 166, 0.12);
+  --eva-pilot-glow: rgba(61, 126, 166, 0.22);
+}
+body[data-eva-pilot="00"][data-ds-dark-theme] {
+  --eva-accent: #8fd4f2;
+  --eva-accent-deep: #5aa9cc;
+  --eva-pilot: #bfe6ff;
+  --eva-pilot-soft: rgba(191, 230, 255, 0.12);
+  --eva-pilot-glow: rgba(191, 230, 255, 0.22);
+}
+
+body[data-eva-pilot="02"]:not([data-ds-dark-theme]) {
+  background-image:
+    radial-gradient(1100px 640px at 16% -12%, rgba(214, 41, 62, 0.16), transparent 62%),
+    repeating-linear-gradient(0deg, rgba(194, 42, 18, 0.04) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(194, 42, 18, 0.04) 0 1px, transparent 1px 46px);
+}
+body[data-eva-pilot="02"][data-ds-dark-theme] {
+  background-image:
+    radial-gradient(1100px 640px at 16% -12%, rgba(255, 90, 40, 0.22), transparent 62%),
+    radial-gradient(820px 560px at 92% 112%, rgba(255, 122, 26, 0.1), transparent 64%),
+    repeating-linear-gradient(0deg, rgba(255, 233, 227, 0.026) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(255, 233, 227, 0.026) 0 1px, transparent 1px 46px);
+}
+body[data-eva-pilot="00"]:not([data-ds-dark-theme]) {
+  background-image:
+    radial-gradient(1100px 640px at 16% -12%, rgba(61, 126, 166, 0.13), transparent 62%),
+    repeating-linear-gradient(0deg, rgba(44, 111, 150, 0.045) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(44, 111, 150, 0.045) 0 1px, transparent 1px 46px);
+}
+body[data-eva-pilot="00"][data-ds-dark-theme] {
+  background-image:
+    radial-gradient(1100px 640px at 16% -12%, rgba(90, 169, 204, 0.18), transparent 62%),
+    radial-gradient(820px 560px at 92% 112%, rgba(191, 230, 255, 0.08), transparent 64%),
+    repeating-linear-gradient(0deg, rgba(230, 244, 251, 0.024) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(230, 244, 251, 0.024) 0 1px, transparent 1px 46px);
+}
+
+body[data-eva-pilot="02"] .eva-gate__bg {
+  background:
+    radial-gradient(90% 70% at 24% 28%, rgba(214, 41, 62, 0.22), transparent 60%),
+    radial-gradient(70% 60% at 78% 76%, rgba(255, 122, 26, 0.18), transparent 62%),
+    linear-gradient(180deg, #0b0505, #160807 58%, #0b0505);
+}
+body[data-eva-pilot="00"] .eva-gate__bg {
+  background:
+    radial-gradient(90% 70% at 24% 28%, rgba(61, 126, 166, 0.22), transparent 60%),
+    radial-gradient(70% 60% at 78% 76%, rgba(191, 230, 255, 0.14), transparent 62%),
+    linear-gradient(180deg, #04080c, #08131a 58%, #04080c);
+}
+
+/* pilot roster on the authentication gate */
+.eva-gate__body {
+  gap: clamp(18px, 2.6vw, 42px);
+  padding: 0 3.4vw;
+}
+.eva-gate__roster {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(272px, 21vw);
+  flex: none;
+}
+.eva-gate__rosterHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+.eva-gate__rosterHead b {
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: rgba(157, 255, 74, 0.75);
+}
+.eva-gate__rosterHead em {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: rgba(233, 226, 245, 0.4);
+}
+.eva-gate__card {
+  appearance: none;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-height: 68px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(185, 139, 224, 0.22);
+  background: rgba(8, 5, 16, 0.55);
+  color: #e9e2f5;
+  font-family: var(--eva-font-hud);
+  text-align: left;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.eva-gate__card[data-selected="1"] {
+  border-color: var(--eva-pilot);
+  background: linear-gradient(90deg, var(--eva-pilot-soft), rgba(8, 5, 16, 0.72));
+  box-shadow: 0 0 18px var(--eva-pilot-glow);
+}
+.eva-gate__cardArt {
+  display: inline-flex;
+  width: 56px;
+  flex: none;
+  overflow: hidden;
+  border-right: 1px solid rgba(185, 139, 224, 0.18);
+  background: linear-gradient(180deg, rgba(18, 10, 30, 0.96), rgba(5, 4, 10, 0.96));
+}
+.eva-gate__cardArt svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.eva-gate__card[data-selected="1"] .eva-gate__cardArt {
+  border-right-color: var(--eva-pilot);
+  filter: saturate(1.08);
+}
+.eva-gate__cardBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  padding: 8px 10px;
+  flex: 1;
+}
+.eva-gate__cardBody b {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+.eva-gate__cardBody i {
+  font-style: normal;
+  font-size: 7.5px;
+  letter-spacing: 0.16em;
+  color: rgba(233, 226, 245, 0.45);
+}
+.eva-gate__cardBody em {
+  font-style: normal;
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: var(--eva-pilot);
+}
+.eva-gate__cardLed {
+  width: 5px;
+  height: 5px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: rgba(233, 226, 245, 0.2);
+}
+.eva-gate__card[data-selected="1"] .eva-gate__cardLed {
+  background: var(--eva-pilot);
+  box-shadow: 0 0 8px var(--eva-pilot);
+}
+
+/* pilot switch + unit chip in the workbench */
+.eva-desk__cell--pilot {
+  cursor: pointer;
+  pointer-events: auto;
+}
+.eva-desk__cell--pilot:hover .eva-desk__value {
+  color: var(--eva-pilot);
+}
+.eva-desk__unit {
+  font-style: normal;
+  font-size: 7.5px;
+  letter-spacing: 0.15em;
+  color: var(--eva-pilot);
+}
+
+@media (max-width: 1120px) {
+  .eva-gate__body {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+  }
+  .eva-gate__roster {
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+  }
+  .eva-gate__rosterHead {
+    display: none;
+  }
+  .eva-gate__card {
+    flex: 1 1 160px;
+    max-width: 220px;
+  }
+}
+@media (max-width: 760px) {
+  .eva-gate__pilot {
+    display: none;
+  }
+}
+
+.eva-gate__atfield {
+  position: absolute;
+  top: 16%;
+  right: 4%;
+  width: 46vmin;
+  height: 46vmin;
+  color: var(--eva-pilot);
+  opacity: 0.09;
+  pointer-events: none;
+}
+.eva-gate__atfield svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------------
+   ENTRY-PLUG PILOT SELECTION (reference-inspired layout, original build)
+   --------------------------------------------------------------------- */
+.eva-gate__body--select {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.9fr) minmax(430px, 1.1fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  padding: 0 4vw;
+}
+.eva-gate__plugScene {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 62vh;
+}
+.eva-gate__contours {
+  position: absolute;
+  inset: -4% -14%;
+  opacity: 0.6;
+  background:
+    repeating-radial-gradient(ellipse at 46% 56%,
+      transparent 0 15px,
+      rgba(255, 140, 40, 0.16) 16px 17px,
+      transparent 18px 33px);
+  -webkit-mask-image: radial-gradient(60% 60% at 50% 55%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(60% 60% at 50% 55%, #000 30%, transparent 78%);
+  animation: eva-contour-drift 16s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes eva-contour-drift {
+  from { transform: scale(1) rotate(-2deg); opacity: 0.42; }
+  to { transform: scale(1.06) rotate(2deg); opacity: 0.72; }
+}
+.eva-gate__plug {
+  position: relative;
+  width: min(300px, 25vw);
+  aspect-ratio: 1 / 2;
+  transform: rotate(14deg);
+}
+.eva-gate__plugImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 30px rgba(255, 140, 40, 0.18));
+}
+.eva-gate__plugGlow {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: 30%;
+  bottom: 24%;
+  background: radial-gradient(50% 50% at 50% 50%, var(--eva-pilot-glow), transparent 70%);
+  filter: blur(8px);
+  animation: eva-plug-glow 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes eva-plug-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.eva-gate__plugPilot {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: 42%;
+  bottom: 34%;
+  background: linear-gradient(180deg, #eaf4ff, var(--eva-pilot) 70%, #1d2f63);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  opacity: 1;
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 0 10px var(--eva-pilot-glow));
+  pointer-events: none;
+}
+.eva-gate__plugPilot[data-inserting="1"] {
+  animation: eva-plug-insert 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes eva-plug-insert {
+  from { opacity: 0; transform: translateX(26px) scale(1.08); filter: blur(4px); }
+  to { opacity: 0.92; transform: translateX(0) scale(1); filter: none; }
+}
+.eva-gate__plugTag {
+  position: absolute;
+  left: -18%;
+  right: -18%;
+  font-family: var(--eva-font-hud);
+  font-size: 8px;
+  letter-spacing: 0.3em;
+  color: rgba(255, 179, 71, 0.75);
+  text-align: center;
+  pointer-events: none;
+}
+.eva-gate__plugTag--top { top: 8%; }
+.eva-gate__plugTag--bottom { bottom: 8%; }
+.eva-gate__plug::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 82%;
+  height: 40%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(5, 4, 10, 0.62), transparent 72%);
+  pointer-events: none;
+}
+.eva-gate__ring {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 80%;
+  height: auto;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+.eva-gate__ringTrack,
+.eva-gate__ringFill {
+  fill: none;
+  stroke-width: 2.4;
+}
+.eva-gate__ringTrack { stroke: rgba(233, 226, 245, 0.28); }
+.eva-gate__ringFill {
+  stroke: var(--eva-pilot);
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+  stroke-dashoffset: calc(326.7 - 326.7 * var(--sync));
+  filter: drop-shadow(0 0 6px var(--eva-pilot));
+  transform: rotate(-90deg);
+  transform-origin: 60px 60px;
+  transition: stroke-dashoffset 0.18s linear;
+}
+.eva-gate__sync {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  padding: 2px 7px;
+  background: rgba(5, 4, 10, 0.62);
+  font-family: var(--eva-font-hud);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #f3edff;
+  text-shadow: 0 0 12px var(--eva-pilot-glow);
+  pointer-events: none;
+}
+.eva-gate__syncLabel {
+  position: absolute;
+  left: 50%;
+  top: calc(56% + 22px);
+  z-index: 3;
+  transform: translateX(-50%);
+  font-family: var(--eva-font-hud);
+  font-size: 7px;
+  letter-spacing: 0.26em;
+  color: rgba(233, 226, 245, 0.42);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.eva-gate__console {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 600px;
+}
+.eva-gate__pilots {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin: 12px 0 10px;
+}
+.eva-gate__pilotBtn {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px 6px 9px;
+  border: 1px solid rgba(185, 139, 224, 0.22);
+  background: rgba(8, 5, 16, 0.6);
+  color: #e9e2f5;
+  font-family: var(--eva-font-hud);
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.eva-gate__pilotBtn:hover {
+  border-color: rgba(255, 179, 71, 0.5);
+}
+.eva-gate__pilotBtn[data-selected="1"] {
+  border-color: var(--eva-pilot);
+  background: linear-gradient(180deg, var(--eva-pilot-soft), rgba(8, 5, 16, 0.78));
+  box-shadow: 0 0 22px var(--eva-pilot-glow);
+}
+.eva-gate__avatar {
+  display: block;
+  width: 86px;
+  height: 86px;
+  background: linear-gradient(180deg, #ffffff 10%, var(--eva-pilot) 90%);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  opacity: 0.9;
+  transition: opacity 0.15s, filter 0.15s;
+}
+.eva-gate__pilotBtn[data-selected="1"] .eva-gate__avatar {
+  opacity: 1;
+  filter: drop-shadow(0 0 10px var(--eva-pilot-glow));
+}
+.eva-gate__pilotInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.eva-gate__pilotInfo b {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+.eva-gate__pilotInfo i {
+  font-style: normal;
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  color: rgba(233, 226, 245, 0.45);
+}
+.eva-gate__pilotInfo em {
+  font-style: normal;
+  font-size: 6.5px;
+  letter-spacing: 0.16em;
+  color: var(--eva-pilot);
+}
+.eva-gate__pilotLed {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(233, 226, 245, 0.16);
+}
+.eva-gate__pilotBtn[data-selected="1"] .eva-gate__pilotLed {
+  background: var(--eva-pilot);
+  box-shadow: 0 0 8px var(--eva-pilot);
+}
+.eva-gate__selectMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(185, 139, 224, 0.16);
+  border-bottom: 1px solid rgba(185, 139, 224, 0.16);
+  width: 100%;
+  font-family: var(--eva-font-hud);
+}
+.eva-gate__selectMeta b {
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  color: #f3edff;
+}
+.eva-gate__selectMeta span {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: rgba(233, 226, 245, 0.45);
+}
+.eva-gate__selectMeta i {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--eva-pilot);
+}
+.eva-gate__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 14px;
+}
+.eva-gate__actions .eva-gate__start {
+  margin-top: 0;
+}
+
+/* the old single-portrait layout can be hidden if both are rendered */
+.eva-gate__body--select .eva-gate__card,
+.eva-gate__body--select .eva-gate__roster {
+  display: none;
+}
+
+@media (max-width: 1120px) {
+  .eva-gate__body--select {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    overflow: auto;
+    padding: 12px 6vw 70px;
+  }
+  .eva-gate__plugScene {
+    min-height: 38vh;
+    width: 100%;
+  }
+  .eva-gate__plug {
+    width: 180px;
+  }
+  .eva-gate__console {
+    align-items: center;
+    text-align: center;
+  }
+  .eva-gate__selectMeta {
+    justify-content: center;
+  }
+  .eva-gate__actions {
+    align-items: center;
+  }
+  .eva-gate__pilotBtn {
+    flex: 0 1 150px;
   }
 }

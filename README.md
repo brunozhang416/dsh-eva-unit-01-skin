@@ -1,110 +1,162 @@
-# EVA Unit-01 Launch Skin · 初号机启动皮肤
+# EVA Launch Console Skin · 初号机启动控制台
 
-把 **DeepSeek Harness Web GUI** 整体改造成「初号机启动控制台」的皮肤插件（Cordis bundle，Host 半空 + Client 半纯前端）。
+把 **DeepSeek Harness Web GUI** 改成 EVA 启动控制台的皮肤插件（Cordis bundle，Host 提供余额/素材路由，Client 负责全部界面）。
 
 - 包名：`dsh-eva-unit-01-skin`
-- 形态：Client 侧皮肤插件，不改 Host、不接后端、不含遥测
-- 适配：Harness Desktop / Web 客户端（深色、浅色两套配色都做了独立设计）
+- 当前版本：**v1.2.0**
+- 形态：Client 侧皮肤插件 + 只读 Host 路由（余额、驾驶员素材）
+- 适配：Harness Desktop / Web 客户端，深色与浅色两套宿主配色
 
-## 特性
+## 三名驾驶员 · 三台机体页面
 
-### 七幕开屏启动序列（约 13.7s）
+启动前的**插入栓认证界面**选择驾驶员，进入对应机体页面：
 
-`システム起動 → パイロット搭乗 → プラグ挿入 → 神経接続 → シンクロ率 100% → 初号機 起動 → 発進`
+| 驾驶员 | 机体 | 页面配色 | 语音 |
+| --- | --- | --- | --- |
+| 碇シンジ / SHINJI IKARI | **EVA-01 初号機** | 紫绿 NERV + 驾驶员蓝 | 系统 TTS 日语 |
+| 明日香 / ASUKA LANGLEY | **EVA-02 二号機** | 红橙 + 深红黑 | 系统 TTS 日语 |
+| 綾波レイ / REI AYANAMI | **EVA-00 零号機** | 白 / 冰蓝 + 冷灰 | 系统 TTS 日语 |
 
-- 第一幕：MAGI 自检终端、旋转仪表、启动进度
-- 第二幕：插入栓剖面、LCL 注液上升与气泡、A10 夹钳合拢
-- 第三幕：插入栓下压、双侧装甲夹钳锁定、`LOCKED` 钢印
-- 第四幕：双路神经波形描线、同步率 0 → 86%
-- 第五幕：环形同步表盘冲满 100%
-- 第六幕：初号机头像亮眼、装甲张开、电源级联
-- 第七幕：弹射轨道、`発進` 巨字 + 闪光，整屏上收露出主界面
+选择会持久化到 `localStorage: eva01.pilot`；工作台中的 `PILOT` 单元可随时切换驾驶员，主题、机体编号、角色语音与插入栓立绘一起换。
 
-跳过方式：右上 `SKIP`、`Esc`、`Space`、`Enter`；点画面其他位置不会误跳过。系统开启「减少动态效果」时改为 2.7s 静态三拍，不会只剩黑屏。
+![插入栓驾驶员选择](docs/pilot-gate.jpg)
 
-![パイロット搭乗 — amber LCL injection](docs/launch-amber-lcl.jpg)
+### 插入栓与驾驶员选择动画
 
-### 机甲化主界面
+参考 `seaison/dsh-plugin-eva-theme` 的插入栓选人流程重做：
 
-- 底部全宽遥测条：`EVA-01 / 発進管制 / SYNC / MAGI / POWER / A.T. FIELD / LCL / 波形 / 时钟 / CYCLE`
-- 对话头部 `EVA-01 TEST TYPE` 编号牌、左右边缘刻度导轨 + 竖排雕刻标签
-- 输入舱 45° 切角、四角螺栓、聚焦绿光；消息板切角 + 内衬发光
-- 侧栏右缘黄黑警示条、工作区装甲接缝、会话行方形化
-- 输入框上方同步率导轨（SYNC / MAGI / POWER / A.T. / 波形 / 时钟）
+- 左侧大型 **插入栓**（倾斜 14°）与橙色等高线背景，筒体标识 `ENTRY PLUG / 挿入栓`、`EVA-01 · 初号機`
+- 右侧三张驾驶员卡：闭眼线稿头像 + 姓名 + 机体编号，选中卡描边、LED 与光晕点亮
+- 切换驾驶员时：插入栓内立绘重播插入动画，同步环从 0→100% 充能，`SYNC` 数字实时跳动
+- 插入栓窗口内的驾驶员线稿与同步环叠加显示；`接続開始` 进入八幕启动序列
+- 8 秒无操作自动静音启动；`音声なしで起動` 可静音；`ESC / ENTER` 键盘启动
+- 支持 `prefers-reduced-motion`（保留静态选人与声音）
 
-### 失控模式（BERSERK / 暴走）
+![EVA-02 / 明日香页面](docs/pilot-asuka.jpg)
+![EVA-00 / 绫波丽页面](docs/pilot-rei.jpg)
 
-入口（两个，同一状态）：底部遥测条最右侧 `⚠ 暴走`；侧栏底部控制组第 4 个 `⚠ 暴走`。
+## 启动序列（约 15.9s）
 
-- 全站从紫/绿切换到血红/琥珀（深浅两套都有对应设计）
-- 进入时约 2s `制御不能` 爆闪 + `UNIT-01 BERSERK // CONTROL LOST`
-- 画面抖动为**一次性 5s**（常规 ±4px、每 1.15s 一次 ±11px 剧烈抽动，`scale(1.02)` 预放大避免露白边），5s 后自动收住，只保留红色暴走界面
-- 故障条纹：6 条水平撕裂带 + 每 4.2s 整屏红色扫描线闪断 + 纵向滚动故障带
-- 常驻告警牌、红色 HUD 边框、状态遥测改为 `SYNC 412.0% / MAGI FAILED / POWER OVERLOAD / A.T. FIELD COLLAPSED / LCL LEAK`
-- 状态持久化；再次点击退出；`prefers-reduced-motion` 下抖动/闪断关闭
+`システム起動 → パイロット認証 → パイロット搭乗 → プラグ挿入 → 神経接続 → シンクロ率 100% → 初号機 起動 → 発進`
 
-### 侧边栏折叠适配
+- 每幕都有对应的机体配色、驾驶员立绘（EVA-01/02/00 专用）、日文分镜标签与语音字幕
+- 插入栓场景的 **LCL 注液为橙黄色**（液面、气泡、注入条纹、容器边框与标签）
+- 同步率环、装甲张开门、弹射轨道等分镜保留
+- 跳过：右上 `SKIP`、`Esc`、`Space`、`Enter`；点画面其他位置不会误跳过
+- 系统「减少动态效果」时改为 2.7s 静态三拍，并保留声音与字幕
 
-折叠态下 macOS 原生窗口按钮会压到内容区左上角，皮肤会自动：
+![LCL 注入（橙黄）](docs/launch-amber-lcl.jpg)
+![驾驶员通讯字幕](docs/pilot-caption.jpg)
 
-- 隐藏头部编号牌，把位置让给系统窗口按钮与宿主导航
-- 隐藏左上角 HUD 准星与左侧边缘导轨
-- 品牌头像缩到 22px；底部 4 个控制按钮改为 2×2 紧凑布局
+## 配乐 / 音效 / 驾驶员语音（原创合成）
+
+- **原创配乐**：WebAudio 运行时合成 4 小节循环（Em(add9) → Cmaj7 → Am(add9) → B7sus4，52 BPM；pad + 低音脉冲 + 心跳 + 钟琴动机 + 噪声微光），启动阶段逐层加入，进入主界面后降为 idle 环境声。**没有音频文件、没有现成歌曲。**
+- **原创音效**：`beep / alarm / clamp / lcl / sync / launch / typing / boot` 全部实时合成。
+- **驾驶员语音**：系统 TTS（优先日语语音）朗读为每名驾驶员**原创**的短句；说话时配乐自动压低。台词见 [`art/pilot-copy.md`](art/pilot-copy.md)。
+- **字幕**：启动分镜与暴走时右上角显示驾驶员通讯字幕（日语 + 中文），可叠在启动动画之上。
+- **静音**：侧栏底部 `♪ 音声` 或底部遥测会统一开关；状态持久化 `eva01.sound`。
+
+> 浏览器要求一次用户手势才能出声：点击插入栓界面、`▶ 起動` 或 `♪ 音声` 即可解锁。
+
+## 工作台与余额
+
+聊天下方新增 **NERV WORKBENCH** 扩展条，参考插件的桌面组件思路：
+
+- **BALANCE**：通过 Host 只读路由 `/dsh-eva-unit-01/balance.json` 请求 DeepSeek 官方余额接口，60s 缓存；`↻` 手动刷新。凭据由 Host 的 credentials 服务读取，**密钥不会进入浏览器、日志或响应**；路由校验回环 Host、`Sec-Fetch-Site` 与 Origin。
+- **PILOT**：点击循环切换驾驶员（同时换主题与语音）。
+- **CLOCK**：本地时针。
+- **SCORE**：原创配乐播放/静音。
+- **TPS**：装饰性实时波形。
+- 余额不可用时显示 `NO KEY` / `OFFLINE` / `TIMEOUT`，不会拖垮页面。
+
+![工作台与同步率导轨](docs/workbench.jpg)
+![驾驶员同步率导轨](docs/pilot-rail.jpg)
+
+## 主界面机甲化
+
+- 底部全宽遥测条：`EVA-0x / 発進管制 / PILOT 0x / SYNC / MAGI / POWER / A.T. FIELD / LCL / 波形 / 时钟 / CYCLE`
+- 左右边缘刻度导轨 + 竖排雕刻标签、输入舱切角与四角螺栓、消息板切角、侧栏警示条
+- 顶部编号牌 `EVA-0x / PILOT 0x`，侧边栏品牌与 Hero 区跟随机体配色
+- 侧边栏折叠态自动适配（隐藏与 macOS 窗口按钮冲突的编号牌、左上准星与左导轨）
+
+## 失控模式（BERSERK / 暴走）
+
+底部遥测条最右 `⚠ 暴走` 或侧栏底部 `⚠ 暴走`：
+
+- 全站血红/琥珀配色；`制御不能` 爆闪 + 驾驶员失控语音
+- **一次性 5s 画面抖动**（±4px / 每 1.15s 剧烈抽动，`scale(1.02)` 防露白边），5s 后自动收住
+- 6 条水平撕裂故障带 + 每 4.2s 整屏闪断 + 纵向滚动故障
+- 遥测变为 `SYNC 412.0% / MAGI FAILED / POWER OVERLOAD / A.T. FIELD COLLAPSED / LCL LEAK`
+- 配乐切到 128 BPM 失真层与警报；退出恢复当前驾驶员语音与曲目
 
 ## 安装
 
-### 方式一：Plugin Manager（推荐）
+### Plugin Manager
 
-1. 打开 Harness：**设置 → 插件 → 添加插件**
+1. Harness → 设置 → 插件 → 添加插件
 2. 填仓库地址：`https://github.com/brunozhang416/dsh-eva-unit-01-skin`
-3. 在「已安装插件」中启用 **EVA 初号机启动皮肤**
-4. 刷新页面（`⌘R` / `Ctrl+R`），首屏会播放完整启动序列
+3. 启用 **EVA 初号机启动皮肤**，刷新页面
+4. 先进入插入栓选人界面；点击启动即带声音
 
-### 方式二：本地目录
+### 本地目录
 
 ```bash
 git clone https://github.com/brunozhang416/dsh-eva-unit-01-skin.git
 ```
 
-设置 → 插件 → 添加插件 → 填入克隆后的本地目录绝对路径 → 启用。
+设置 → 插件 → 添加插件 → 填克隆目录绝对路径 → 启用。
 
 ### 卸载
 
-设置 → 插件 → 关闭「EVA 初号机启动皮肤」。主题令牌层、样式表与所有 Slot 贡献会随插件一起移除，界面恢复原样。
+关闭插件即移除主题令牌、样式表、声音引擎、Host 路由与全部 Slot 贡献。
 
 ## 控制
 
 | 入口 | 作用 |
 | --- | --- |
-| 侧栏底部 `▶ 起動` | 重播完整七幕启动序列 |
-| 侧栏底部 `◈ HUD` | HUD 强度循环：`◈ 完整 → ◇ 精简 → ○ 关闭` |
-| 侧栏底部 `◐ MODE` | 明暗快速切换（写入 Harness 主题偏好；恢复跟随系统请到 设置 → 通用设置 → 外观） |
-| 侧栏底部 / 底部遥测条 `⚠ 暴走` | 切换失控模式（状态持久化） |
+| 插入栓界面卡片 | 选择驾驶员 / 机体页面 |
+| 插入栓界面 `接続開始` | 带声音开始八幕启动 |
+| 侧栏 `▶ 起動` | 用当前驾驶员重播启动 |
+| 侧栏 `◈ HUD` | HUD 强度：完整 / 精简 / 关闭 |
+| 侧栏 `◐ MODE` | 明暗切换 |
+| 侧栏 `♪ 音声` | 配乐 / 音效 / 语音总开关 |
+| 工作台 `PILOT` | 循环切换驾驶员 |
+| 工作台 `BALANCE ↻` | 刷新账户余额 |
+| 侧栏 / 遥测条 `⚠ 暴走` | 切换失控模式 |
 
-页面状态键：`localStorage: eva01.hud.fx`、`eva01.berserk`。
+状态键：`eva01.hud.fx`、`eva01.berserk`、`eva01.sound`、`eva01.gate`、`eva01.pilot`。
 
 ## 开发
 
 ```bash
-node build.mjs --check   # 内联 src/skin.css + art/*.svg 到 client.js，并做语法/清单校验
+node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进 client.js
 ```
 
-| 文件 | 说明 |
+| 路径 | 说明 |
 | --- | --- |
-| `src/client.template.js` | Client 半源码（React createElement，无 JSX；构建时注入 CSS/SVG） |
-| `src/skin.css` | 全部样式：EVA 设计令牌、宿主界面皮肤、HUD、启动序列、暴走模式、折叠适配 |
-| `art/*.svg` | 原创矢量素材：初号机头像、插件图标、HUD 徽章、警示条纹、波形 |
-| `client.js` | 构建产物（Harness 加载的浏览器模块） |
-| `index.js` | Host 半（空实现，皮肤不需要 Host 能力） |
-| `cordis.patch.yml` | Bundle patch，插入 `dsh-eva-unit-01-skin` 行 |
+| `src/client.template.js` | Client 半源码（React createElement，无 JSX） |
+| `src/skin.css` | 全部样式：令牌、宿主皮肤、HUD、启动序列、插入栓选人、暴走、折叠适配 |
+| `src/audio.js` | 原创 WebAudio 合成器：配乐、相位分层、8 种音效、TTS 队列与降音 |
+| `src/audio-notes.md` | 音频引擎 API 与设计说明 |
+| `index.js` | Host：余额路由 + 驾驶员素材静态路由（回环/同源校验） |
+| `art/*.svg` | 原创矢量：机体头像 / 徽章 / 驾驶员线稿源 / AT 力场 |
+| `assets/*.png` | 选人界面线稿与机体立绘（见 NOTICE） |
+| `assets/entry-plug.svg` | 插入栓素材（见 NOTICE） |
+| `client.js` | 构建产物 |
 
-## 兼容性与边界（如实记录）
+## 兼容性与边界
 
-- **宿主类名会随版本重建而变**：组件内部定位使用 `[class*="_localName"]`（如 `_sessionRow` / `_bubble` / `_headline`）与稳定的 `[data-slot]` / `[data-*]` / `role` 锚点；类名轮换时外观会降级为纯令牌配色，不会破坏布局或功能。
-- 主题令牌优先走 `ctx.theme.overrideTokens()` 的 alias token，其余令牌由皮肤样式表在 `body` / `body[data-ds-dark-theme]` 上补齐。
-- 启动序列、HUD、故障条纹均为 `pointer-events: none`，不拦截交互；启动序列播放期间会临时拦截底层点击，结束即恢复。
-- 所有美术为**原创矢量素材**，不含官方 EVA/NERV 素材。
-- 已验证环境：DeepSeek Harness Desktop（macOS；深浅两套主题、hero/对话两态、侧栏折叠、设置面板、插件管理页、添加插件弹窗、启动重播、减少动效、暴走爆闪/抖动/故障条纹）。
+- 宿主类名轮换时使用 `[class*="_localName"]` 与稳定 `[data-slot]` / `role` / `aria-label` 锚点降级。
+- 声音需要手势解锁；`speechSynthesis` 不可用时语音静默，字幕照常显示。
+- 余额需要 Host 凭据服务可用且已配置 `DEEPSEEK_API_KEY`；无网络/无密钥时显示状态码。
+- 余额路由仅监听回环地址并校验同源与 `Sec-Fetch-Site`，只读、无写操作。
+
+## 素材与授权
+
+- 代码与原创矢量/音频/台词：MIT（见 `LICENSE`）。
+- 选人界面的 **明日香 / 绫波丽线稿 PNG** 与 **插入栓 SVG** 来自 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)，按其仓库说明其媒体素材不在 MIT 覆盖范围内；本仓库按用户要求引用并保留署名，权利归原作者。插入栓 SVG 做了 XML 合法性与内联样式修复。见 [`NOTICE.md`](NOTICE.md)。
+- 碇シンジ线稿由本插件原创的矢量立绘转为线稿；角色服装/随身听/耳机等设计参考用户提供的概念图与插画，不复制原始画面。
+- 不包含官方动画音轨、声优录音或官方美术素材；角色名与机体名为致敬性引用，本项目为非商业粉丝作品。
 
 ## License
 

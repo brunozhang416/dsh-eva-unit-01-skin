@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none" role="img" aria-label="Original Unit-03 style mecha head emblem recolour">
+  <!-- original recolour of our own head.svg geometry for Unit-03 (palette swap only, no traced art) -->
+  <defs>
+    <linearGradient id="eva03HeadArmor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EDF3FA"/>
+      <stop offset=".58" stop-color="#BFD8FF"/>
+      <stop offset="1" stop-color="#0A1018"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ambient HUD ticks -->
+  <g stroke="#3D7EA6" stroke-width="1.5" opacity=".5">
+    <path d="M3 90h10M3 96h6M107 90h10M111 96h6M3 83h4M113 83h4"/>
+  </g>
+
+  <!-- rear fins -->
+  <path d="M44 24 31 15 28 21 39 30Z" fill="#0A1018" stroke="#EDF3FA" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M76 24 89 15 92 21 81 30Z" fill="#0A1018" stroke="#EDF3FA" stroke-width="2" stroke-linejoin="miter"/>
+
+  <!-- crest horn -->
+  <path d="M54 25 64 23.5 67.5 1.5 60 3Z" fill="#EDF3FA" stroke="#7FC4E8" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M58 22.5 63 22 65 8 62 8.5Z" fill="#BFD8FF"/>
+  
+
+  <!-- shoulders / bust -->
+  <g stroke="#BFD8FF" stroke-width="2" stroke-linejoin="miter">
+    <path d="M8 118 20 97 48 91 56 104 54 118Z" fill="#0A1018"/>
+    <path d="M112 118 100 97 72 91 64 104 66 118Z" fill="#0A1018"/>
+  </g>
+  <path d="M17 105 24 100 27 103 20 108Z" fill="#FFD400"/>
+  <path d="M103 105 96 100 93 103 100 108Z" fill="#FFD400"/>
+  <path d="M28 96 36 94M92 96 84 94" stroke="#3D7EA6" stroke-width="1.5"/>
+
+  <!-- neck + collar -->
+  <path d="M53 78H67L69 95H51Z" fill="#3D7EA6" stroke="#14202E" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M54.5 82H65.5M54 87.5H66" stroke="#14202E" stroke-width="1.5"/>
+  <path d="M46 92H74L80 107H40Z" fill="#BFD8FF" stroke="#7FC4E8" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M51 96H69L71 102H49Z" fill="#05080D"/>
+  <path d="M58 98h4v3h-4Z" fill="#FF7A1A"/>
+
+  <!-- head shell -->
+  <path d="M52 15 68 15 78 21 87 38 84 50 88 62 79 79 67 88 53 88 41 79 32 62 36 50 33 38 42 21Z"
+        fill="url(#eva03HeadArmor)" stroke="#7FC4E8" stroke-width="2" stroke-linejoin="miter"/>
+  <g stroke="#3D7EA6" stroke-width="1.5" stroke-linecap="square">
+    <path d="M36.5 48 41.5 48M35.5 53 40.5 53.6M34.5 58 39.5 58.6"/>
+  </g>
+
+  <!-- brow plate -->
+  <path d="M45 26 75 26 79 40 60 44 41 40Z" fill="#EDF3FA" stroke="#7FC4E8" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M60 28.5v13" stroke="#EDF3FA" stroke-width="1.5"/>
+  <path d="M50 32.5 56.5 32.5M70 32.5 63.5 32.5" stroke="#7FC4E8" stroke-width="1.5"/>
+  <path d="M45.5 30.5h3v3h-3Z" fill="#05080D" stroke="#FF7A1A" stroke-width="1.2"/>
+
+  <!-- eye recess -->
+  <path d="M43 41 77 41 73 66 47 66Z" fill="#05080D" stroke="#14202E" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M44 44 76 44" stroke="#0A1018" stroke-width="2"/>
+
+  <!-- right eye cover plate -->
+  <path d="M60 40 77 40 73 66 60 66Z" fill="#BFD8FF" stroke="#7FC4E8" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M64 44 70 45 68 58 63 62Z" fill="#EDF3FA"/>
+  <path d="M64 66 70 64.5" stroke="#7FC4E8" stroke-width="1.5"/>
+
+  <!-- single eye -->
+  <path d="M44.5 48.5 59.8 46 60.2 55.5 46 58.5Z" fill="#FF7A1A" stroke="#FFB347" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M45.5 49.7 59 47.3" stroke="#FFD400" stroke-width="1.2"/>
+
+  <!-- chin plate + grille -->
+  <path d="M47 66 73 66 77 77 67 87 53 87 43 77Z" fill="#0A1018" stroke="#7FC4E8" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M60 67.5v6" stroke="#7FC4E8" stroke-width="1"/>
+  <g fill="#05080D">
+    <path d="M51 77 53.4 76.6 53.8 84.5 51.6 84.9Z"/>
+    <path d="M55.2 76.6 57.6 76.2 58 84.1 55.8 84.5Z"/>
+    <path d="M59.4 76.2 61.8 75.9 62.2 83.7 60 84.1Z"/>
+    <path d="M63.6 75.9 66 75.6 66.2 83.3 64.2 83.6Z"/>
+  </g>
+
+  <!-- cable port -->
+  <circle cx="90" cy="61" r="7" fill="#0A1018" stroke="#3D7EA6" stroke-width="2"/>
+  <circle cx="90" cy="61" r="2.8" fill="#FF7A1A"/>
+  <path d="M90 53.5v2M90 66.5v2M82.5 61h2M95.5 61h2" stroke="#3D7EA6" stroke-width="1.5"/>
+  <path d="M97 58.5 104 56 106 63 99 65.5Z" fill="#3D7EA6" stroke="#14202E" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M98.5 60 103 58.6" stroke="#FF7A1A" stroke-width="2"/>
+</svg>

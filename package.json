@@ -1,9 +1,9 @@
 {
   "name": "dsh-eva-unit-01-skin",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "EVA Unit-01 launch-console skin for the DeepSeek Harness Web GUI: seven-scene boot sequence, NERV-style HUD, mecha chrome and a berserk mode.",
+  "description": "EVA Unit-01/02/00 launch-console skin for the DeepSeek Harness Web GUI: entry-plug pilot selection (Shinji/Asuka/Rei), character line-art, seven-scene boot sequence, original synthesised score, pilot voice (system TTS), account balance widget and berserk mode.",
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -16,8 +16,11 @@
     "cordis.patch.yml",
     "locale/*.json",
     "art/*.svg",
+    "assets/*.png",
+    "assets/*.svg",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE.md"
   ],
   "dsh": {
     "bundle": {

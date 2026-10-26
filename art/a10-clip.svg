@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" role="img" aria-label="A10 nerve clip icon">
+  <!-- one A10 clamp, opening downward; every mark uses currentColor, so setting
+       the parent CSS color token recolours it for any HUD status row -->
+  <path d="M5 4H19V8H16.5V20H13.5V8H10.5V20H7.5V8H5Z" fill="currentColor"/>
+  <!-- feed stem out of the hinge -->
+  <path d="M12 4V1.5" stroke="currentColor" stroke-width="2" stroke-linecap="butt"/>
+</svg>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" width="240" height="320" fill="none" role="img" aria-label="Original half-body pilot portrait: calm short light-blue haired girl in a white plugsuit with ice-blue panels, hands at her sides">
+  <!-- 01 corner HUD ticks -->
+  <g stroke="#6B5F80" stroke-width="2" opacity=".6" stroke-linecap="square">
+    <path d="M16 46V16h30M224 46V16h-30M16 274v30h30M224 274v30h-30"/>
+  </g>
+  <g fill="#FFB347" opacity=".85">
+    <path d="M20 20h4v4h-4zM216 20h4v4h-4zM20 296h4v4h-4zM216 296h4v4h-4z"/>
+  </g>
+
+  <!-- 02 white torso + ice-blue side panels + red piping -->
+  <path d="M78 190H162L178 232 182 320H58L62 232Z" fill="#EDF3FA" stroke="#BFD8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M60 320 64 234 80 192 106 198 100 252 88 320Z" fill="#7FC4E8" stroke="#BFD8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M180 320 176 234 160 192 134 198 140 252 152 320Z" fill="#7FC4E8" stroke="#BFD8FF" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M104 198 88 320M136 198 152 320" stroke="#C93A4B" stroke-width="2.5"/>
+  <path d="M90 214 100 208 103 214 94 220Z" fill="#EDF3FA"/>
+  <path d="M150 214 140 208 137 214 146 220Z" fill="#EDF3FA"/>
+
+  <!-- 03 neck -->
+  <path d="M102 132H138L143 200H97Z" fill="#F2E7DD" stroke="#C5AA96" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M104 140H136" stroke="#D9C3B2" stroke-width="2.5"/>
+  <!-- 04 collar: white ring with ice rim, red latch -->
+  <path d="M88 156H152L160 194H80ZM108 170H132L136 184H104Z" fill="#EDF3FA" fill-rule="evenodd" stroke="#7FC4E8" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M108 194H132L128 203H112Z" fill="#C93A4B" stroke="#EDF3FA" stroke-width="1.5"/>
+
+  <!-- 04 chest interface unit: pale-blue bezel, red ring, orange core -->
+  <path d="M120 226 134 232 140 246 134 260 120 266 106 260 100 246 106 232Z"
+        fill="#3D7EA6" stroke="#EDF3FA" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M120 233 129 237 133 246 129 255 120 259 111 255 107 246 111 237Z" fill="#C93A4B"/>
+  <circle cx="120" cy="246" r="5" fill="#FF7A1A"/>
+  <path d="M120 220V226M120 266V272M94 246H100M140 246H146" stroke="#EDF3FA" stroke-width="2"/>
+
+  <!-- 05 "00" chest marking (vector strokes, no font) -->
+  <path d="M95 208 104 208 105 215 104 222 95 222 94 215Z" stroke="#3D7EA6" stroke-width="2.2" stroke-linejoin="miter"/>
+  <path d="M110 208 119 208 120 215 119 222 110 222 109 215Z" stroke="#3D7EA6" stroke-width="2.2" stroke-linejoin="miter"/>
+
+
+  <!-- 07 arms at her sides with hands visible at the frame edge -->
+  <path d="M44 280 42 258 48 214 68 200 84 208 82 264 86 280Z" fill="#EDF3FA" stroke="#7FC4E8" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M42 276H88L90 288H40Z" fill="#7FC4E8" stroke="#BFD8FF" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M46 288 84 288 88 300 80 314 54 316 44 304Z" fill="#F2E7DD" stroke="#C5AA96" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M54 296V312M64 294V314M74 296V312" stroke="#C5AA96" stroke-width="1.5"/>
+  <path d="M196 280 198 258 192 214 172 200 156 208 158 264 154 280Z" fill="#EDF3FA" stroke="#7FC4E8" stroke-width="2.5" stroke-linejoin="miter"/>
+  <path d="M198 276H152L150 288H200Z" fill="#7FC4E8" stroke="#BFD8FF" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M194 288 156 288 152 300 160 314 186 316 196 304Z" fill="#F2E7DD" stroke="#C5AA96" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M186 296V312M176 294V314M166 296V312" stroke="#C5AA96" stroke-width="1.5"/>
+
+  <!-- 08 head (same construction as rei-avatar, scaled 1.5x) -->
+  <g transform="translate(30.5 31) scale(1.5)">
+    <path d="M60 3 82 8 90 26 91 47 88 62 82 68 76 54 72 47 48 47 44 54 38 68 32 62 29 47 30 26 38 8Z"
+          fill="#7FC4E8" stroke="#3D7EA6" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M60 16 76 20 84 33 83 49 78 62 70 71 60 78 50 71 42 62 37 49 36 33 44 20Z"
+          fill="#F2E7DD" stroke="#C5AA96" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M38 33 42 18 52 13 60 16 68 13 78 18 82 33 76 35 70 31 64 35 58 31 52 35 46 31 41 36Z"
+          fill="#7FC4E8" stroke="#3D7EA6" stroke-width="1.5" stroke-linejoin="miter"/>
+    <path d="M46 18 56 15M66 15 76 19" stroke="#BFD8FF" stroke-width="2"/>
+    <path d="M43 38 57 38.5M77 38 63 38.5" stroke="#3D7EA6" stroke-width="2.2" stroke-linecap="butt"/>
+    <path d="M45 46.5 58 45 57.5 52 47 53.5Z" fill="#FFFBF4"/>
+    <path d="M48.5 48 55.5 46.8 55.5 51 49 52.2Z" fill="#C93A4B"/>
+    <path d="M75 46.5 62 45 62.5 52 73 53.5Z" fill="#FFFBF4"/>
+    <path d="M71.5 48 64.5 46.8 64.5 51 71 52.2Z" fill="#C93A4B"/>
+    <path d="M60 52V57L62.5 59.8" stroke="#C0917A" stroke-width="2" stroke-linejoin="miter"/>
+    <path d="M56 66H64" stroke="#B5735C" stroke-width="2" stroke-linecap="butt"/>
+    <path d="M29 29 39 26 45 36 37 44 28 40Z" fill="#EDF3FA" stroke="#3D7EA6" stroke-width="2" stroke-linejoin="miter"/>
+    <path d="M34 38 39 35 41 39 37 43Z" fill="#7FC4E8"/>
+    <path d="M28 29 24 22M28 40 24 46" stroke="#6B7488" stroke-width="2.5"/>
+    <path d="M91 29 81 26 75 36 83 44 92 40Z" fill="#EDF3FA" stroke="#3D7EA6" stroke-width="2" stroke-linejoin="miter"/>
+    <path d="M86 38 81 35 79 39 83 43Z" fill="#7FC4E8"/>
+    <path d="M92 29 96 22M92 40 96 46" stroke="#6B7488" stroke-width="2.5"/>
+  </g>
+</svg>

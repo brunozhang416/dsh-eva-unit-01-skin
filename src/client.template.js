@@ -16,6 +16,9 @@ window.__ModuleLoader__.load({
      * ------------------------------------------------------------------ */
     const FX_KEY = 'eva01.hud.fx';
     const BERSERK_KEY = 'eva01.berserk';
+    const SOUND_KEY = 'eva01.sound';
+    const GATE_KEY = 'eva01.gate';
+    const PILOT_KEY = 'eva01.pilot';
 
     function readFx() {
       try {
@@ -50,6 +53,55 @@ window.__ModuleLoader__.load({
       }
     }
 
+    function readSound() {
+      try {
+        return window.localStorage.getItem(SOUND_KEY) !== '0';
+      } catch (error) {
+        return true;
+      }
+    }
+
+    function writeSound(on) {
+      try {
+        window.localStorage.setItem(SOUND_KEY, on ? '1' : '0');
+      } catch (error) {
+        /* page-local only */
+      }
+    }
+
+    function hasGatePassed() {
+      try {
+        return window.sessionStorage.getItem(GATE_KEY) === '1';
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function markGatePassed() {
+      try {
+        window.sessionStorage.setItem(GATE_KEY, '1');
+      } catch (error) {
+        /* page-local only */
+      }
+    }
+
+    function readPilot() {
+      try {
+        const value = window.localStorage.getItem(PILOT_KEY);
+        return value === 'asuka' || value === 'rei' || value === 'shinji' ? value : 'shinji';
+      } catch (error) {
+        return 'shinji';
+      }
+    }
+
+    function writePilot(key) {
+      try {
+        window.localStorage.setItem(PILOT_KEY, key);
+      } catch (error) {
+        /* page-local only */
+      }
+    }
+
     function createSignal(initial) {
       const listeners = new Set();
       let value = initial;
@@ -73,6 +125,186 @@ window.__ModuleLoader__.load({
     const launchSignal = createSignal(0);
     const berserkSignal = createSignal(readBerserk());
     const berserkBurstSignal = createSignal(0);
+    const soundSignal = createSignal(readSound());
+    const captionSignal = createSignal(null);
+
+    /* __EVA_AUDIO__ */
+
+    const audio = createEvaAudio();
+
+    // ------------------------------------------------------------------
+    // Pilot roster. Each pilot owns a unit page (01 / 02 / 03), a palette,
+    // a portrait set, voice parameters and an original script. The names are
+    // homage only; artwork, music and lines are original to this plugin.
+    // ------------------------------------------------------------------
+    const PILOTS = {
+      shinji: {
+        key: 'shinji',
+        no: '01',
+        unit: '01',
+        unitJp: '初号機',
+        unitEn: 'UNIT-01',
+        name: '碇シンジ',
+        en: 'SHINJI IKARI',
+        avatar: 'pilotAvatar',
+        portrait: 'pilotPortrait',
+        casual: 'pilotCasual',
+        head: 'head',
+        assetAvatar: 'avatar-shinji.png',
+        assetPortrait: 'portrait-shinji.png',
+        voice: { rate: 0.95, pitch: 1.05 },
+        lines: {
+          gate: { jp: 'ゲートの前で、足が止まる', zh: '在闸门前，脚迈不动。' },
+          boot: { jp: 'システム、起動した…？', zh: '系统…启动了吗？' },
+          pilot: { jp: 'パイロット、搭乗します', zh: '驾驶员，开始登机。' },
+          plug: { jp: 'プラグ、入るの…怖い', zh: '插入栓要进去了…好怕。' },
+          neural: { jp: '神経、つながってく…', zh: '神经…正在接上。' },
+          sync: { jp: 'シンクロ率、上がってる', zh: '同步率在往上走。' },
+          activate: { jp: '初号機が、動き出した', zh: '初号机…动起来了。' },
+          launch: { jp: '発進、します…！', zh: '要…出发了！' },
+          welcome: { jp: '来てくれた…うれしい', zh: '你来了…我很高兴。' },
+          berserk_on: { jp: '止まらない、誰か止めて', zh: '停不下来…谁来拦住它！' },
+          berserk_off: { jp: '…戻った、の？', zh: '……回来了吗？' },
+          complete: { jp: '生きてる…よかった', zh: '还活着…太好了。' },
+        },
+      },
+      asuka: {
+        key: 'asuka',
+        no: '02',
+        unit: '02',
+        unitJp: '二号機',
+        unitEn: 'UNIT-02',
+        name: '明日香',
+        en: 'ASUKA LANGLEY',
+        avatar: 'asukaAvatar',
+        portrait: 'asukaPortrait',
+        casual: 'asukaPortrait',
+        head: 'head02',
+        assetAvatar: 'avatar-asuka.png',
+        assetPortrait: 'portrait-asuka.png',
+        voice: { rate: 1.06, pitch: 1.18 },
+        lines: {
+          gate: { jp: '私に任せなさい！', zh: '交给我吧！' },
+          boot: { jp: 'システム、起動ね。', zh: '系统，启动了呢。' },
+          pilot: { jp: 'アスカ、搭乗するわ。', zh: '明日香，登机。' },
+          plug: { jp: 'プラグ、装着！', zh: '插入栓，装着！' },
+          neural: { jp: '神経接続、完了。', zh: '神经连接，完成。' },
+          sync: { jp: 'シンクロ率、見てなさい！', zh: '看看同步率吧！' },
+          activate: { jp: '二号機、起動！', zh: '二号机，启动！' },
+          launch: { jp: '発進よ！', zh: '出发！' },
+          welcome: { jp: '戻ったわ。何するの？', zh: '我回来了。要做什么？' },
+          berserk_on: { jp: 'うわっ…制御不能！？', zh: '哇……控制不住了！？' },
+          berserk_off: { jp: '……戻ったわね。', zh: '……回来了呢。' },
+          complete: { jp: '任務完了！', zh: '任务完成！' },
+        },
+      },
+      rei: {
+        key: 'rei',
+        no: '00',
+        unit: '00',
+        unitJp: '零号機',
+        unitEn: 'UNIT-00',
+        name: '綾波レイ',
+        en: 'REI AYANAMI',
+        avatar: 'reiAvatar',
+        portrait: 'reiPortrait',
+        casual: 'reiPortrait',
+        head: 'head00',
+        assetAvatar: 'avatar-rei.png',
+        assetPortrait: 'portrait-rei.png',
+        voice: { rate: 0.86, pitch: 0.92 },
+        lines: {
+          gate: { jp: '……指示をください。', zh: '……请下指示。' },
+          boot: { jp: 'システム、起動。', zh: '系统，启动。' },
+          pilot: { jp: '綾波レイ、搭乗します。', zh: '绫波丽，登机。' },
+          plug: { jp: 'プラグ、接続。', zh: '插入栓，连接。' },
+          neural: { jp: '神経、接続。', zh: '神经，连接。' },
+          sync: { jp: 'シンクロ、上昇。', zh: '同步率，上升。' },
+          activate: { jp: '零号機、起動。', zh: '零号机，启动。' },
+          launch: { jp: '発進します。', zh: '出发。' },
+          welcome: { jp: 'おかえりなさい。', zh: '欢迎回来。' },
+          berserk_on: { jp: '……制御、できません。', zh: '……无法控制。' },
+          berserk_off: { jp: '……戻りました。', zh: '……回来了。' },
+          complete: { jp: '任務、完了。', zh: '任务，完成。' },
+        },
+      },
+    };
+
+    const pilotSignal = createSignal(readPilot());
+
+    function pilotOf(key) {
+      return PILOTS[key] || PILOTS.shinji;
+    }
+
+    function currentPilot() {
+      return pilotOf(pilotSignal.get());
+    }
+
+    function setPilot(key) {
+      if (!PILOTS[key] || pilotSignal.get() === key) return;
+      writePilot(key);
+      pilotSignal.set(key);
+    }
+
+    function choosePilot(key) {
+      if (!PILOTS[key]) return;
+      setPilot(key);
+      if (soundSignal.get()) {
+        audio.unlock().then((ok) => {
+          if (ok) sayLine('gate');
+        });
+      }
+    }
+
+    function cyclePilot() {
+      const keys = Object.keys(PILOTS);
+      const index = keys.indexOf(pilotSignal.get());
+      choosePilot(keys[(index + 1) % keys.length]);
+    }
+
+    function usePilot() {
+      return pilotOf(useSignal(pilotSignal));
+    }
+
+    let captionSeq = 0;
+    let captionTimer = 0;
+
+    function sayLine(key) {
+      const pilot = currentPilot();
+      const line = pilot.lines[key];
+      if (!line) return;
+      captionSeq += 1;
+      const current = captionSeq;
+      captionSignal.set({ id: current, jp: line.jp, zh: line.zh, pilot: pilot.key });
+      clearTimeout(captionTimer);
+      captionTimer = setTimeout(() => {
+        if (captionSeq === current) captionSignal.set(null);
+      }, 4600);
+      if (soundSignal.get()) {
+        audio.speak(line.jp, {
+          lang: 'ja-JP',
+          rate: pilot.voice.rate,
+          pitch: pilot.voice.pitch,
+        });
+      }
+    }
+
+    function toggleSound() {
+      const next = !soundSignal.get();
+      soundSignal.set(next);
+      writeSound(next);
+      audio.setEnabled(next);
+      if (next) {
+        audio.unlock().then((ok) => {
+          if (ok) {
+            audio.sfx('beep');
+            audio.setPhase('idle');
+            audio.startBoot();
+            audio.stopBoot();
+          }
+        });
+      }
+    }
 
     function setFx(next) {
       fxSignal.set(next);
@@ -132,6 +364,7 @@ window.__ModuleLoader__.load({
      * ------------------------------------------------------------------ */
     const FULL_SCENES = [
       { id: 'boot', ms: 1400, jp: 'システム起動', en: 'SYSTEM BOOT' },
+      { id: 'pilot', ms: 2200, jp: 'パイロット認証', en: 'PILOT AUTHENTICATION' },
       { id: 'plug', ms: 2500, jp: 'パイロット搭乗', en: 'PILOT ENTRY' },
       { id: 'insert', ms: 1900, jp: 'プラグ挿入', en: 'ENTRY PLUG LOCK' },
       { id: 'neural', ms: 2500, jp: '神経接続', en: 'NEURAL LINK' },
@@ -242,6 +475,29 @@ window.__ModuleLoader__.load({
         }));
     }
 
+    function PilotScene() {
+      const pilot = usePilot();
+      return h('div', { className: 'eva-scene eva-scene--pilot' },
+        h('div', { className: 'eva-pilotbrief' },
+          h('span', { className: 'eva-pilotbrief__frame' }),
+          h(Art, { name: pilot.portrait, className: 'eva-pilotbrief__portrait' }),
+          h('span', { className: 'eva-pilotbrief__a10' },
+            h(Art, { name: 'a10Clip', className: 'eva-pilotbrief__clip' }),
+            h('span', null, 'A10 CLIPS · L/R'),
+            h('b', null, 'LOCK'))),
+        h(SceneReadout, {
+          jp: 'パイロット認証',
+          en: 'PILOT AUTHENTICATION',
+          big: '搭乗',
+          rows: [
+            ['パイロット', 'PILOT', pilot.name],
+            ['A10 クリップ', 'A10 CLIPS', 'STANDBY'],
+            ['シンクロ率', 'SYNC RATIO', '0.0%'],
+            ['LCL', 'LCL', 'READY'],
+          ],
+        }));
+    }
+
     function PlugScene(props) {
       const percent = Math.round(props.lcl * 100);
       return h('div', { className: 'eva-scene eva-scene--plug' },
@@ -337,19 +593,20 @@ window.__ModuleLoader__.load({
     }
 
     function ActivateScene() {
+      const pilot = usePilot();
       return h('div', { className: 'eva-scene eva-scene--activate' },
         h('div', { className: 'eva-activate' },
           h('span', { className: 'eva-activate__flap eva-activate__flap--l' }),
           h('span', { className: 'eva-activate__flap eva-activate__flap--r' }),
           h('span', { className: 'eva-activate__glow' }),
-          h(Art, { name: 'head', className: 'eva-activate__head' }),
+          h(Art, { name: pilot.head, className: 'eva-activate__head' }),
           h('span', { className: 'eva-activate__eye' })),
         h(SceneReadout, {
-          jp: '初号機 起動',
-          en: 'UNIT-01 ACTIVATED',
+          jp: pilot.unitJp + ' 起動',
+          en: pilot.unitEn + ' ACTIVATED',
           big: '起動',
           rows: [
-            ['初号機', 'UNIT-01', 'ACTIVE'],
+            [pilot.unitJp, pilot.unitEn, 'ACTIVE'],
             ['主電源', 'MAIN POWER', 'ON'],
             ['A.T.フィールド', 'A.T. FIELD', 'STANDBY'],
             ['全系統', 'ALL SYSTEMS', 'GREEN'],
@@ -358,12 +615,13 @@ window.__ModuleLoader__.load({
     }
 
     function LaunchScene() {
+      const pilot = usePilot();
       return h('div', { className: 'eva-scene eva-scene--launch' },
         h('div', { className: 'eva-launchscene' },
           h('span', { className: 'eva-launchscene__rails' }),
           h('span', { className: 'eva-launchscene__clamps' }),
           h('span', { className: 'eva-launchscene__title' }, '発進'),
-          h('span', { className: 'eva-launchscene__sub' }, 'LAUNCH // EVA-01'),
+          h('span', { className: 'eva-launchscene__sub' }, 'LAUNCH // EVA-' + pilot.unit),
           h('span', { className: 'eva-launchscene__bar' })),
         h(SceneReadout, {
           jp: '発進',
@@ -378,6 +636,7 @@ window.__ModuleLoader__.load({
     }
 
     function LaunchSequence(props) {
+      const pilot = usePilot();
       const reduced = reduceMotion();
       const scenes = reduced ? STATIC_SCENES : FULL_SCENES;
       const total = scenes.reduce((sum, scene) => sum + scene.ms, 0);
@@ -385,6 +644,7 @@ window.__ModuleLoader__.load({
       const [leaving, setLeaving] = useState(false);
       const done = useRef(false);
       const timer = useRef(0);
+      const lastScene = useRef(null);
 
       const finish = () => {
         if (done.current) return;
@@ -434,6 +694,13 @@ window.__ModuleLoader__.load({
       const sceneId = leaving ? 'leave' : at.scene.id;
       const sceneProps = { sync, lcl };
 
+      useEffect(() => {
+        const id = at.scene.id;
+        if (lastScene.current === id) return;
+        lastScene.current = id;
+        if (props.onScene) props.onScene(id);
+      }, [at.scene.id]);
+
       return h('div', {
         className: 'eva-launch',
         'data-scene': sceneId,
@@ -450,14 +717,14 @@ window.__ModuleLoader__.load({
             h('span', { key: index, className: 'eva-launch__slat', style: { '--eva-slat': index } }))),
         h('div', { className: 'eva-launch__grid' }),
         h('div', { className: 'eva-launch__top' },
-          h(Art, { name: 'head', className: 'eva-launch__brandmark' }),
+          h(Art, { name: pilot.head, className: 'eva-launch__brandmark' }),
           h('span', { className: 'eva-launch__brand' },
-            h('b', null, 'EVA-01'),
+            h('b', null, 'EVA-' + pilot.unit),
             h('em', null, '発進管制 / LAUNCH CONTROL')),
           h('span', { className: 'eva-launch__scenelabel' },
             h('span', null, 'SCENE ' + pad(at.index + 1) + ' / ' + pad(scenes.length)),
-            h('b', null, at.scene.jp),
-            h('span', null, at.scene.en)),
+            h('b', null, at.scene.jp.replace('初号機', pilot.unitJp)),
+            h('span', null, at.scene.en.replace('UNIT-01', pilot.unitEn))),
           h('button', {
             type: 'button',
             className: 'eva-launch__skip',
@@ -468,6 +735,7 @@ window.__ModuleLoader__.load({
           }, t('skip'))),
         h('div', { className: 'eva-launch__stage' },
           h(BootScene),
+          h(PilotScene),
           h(PlugScene, sceneProps),
           h(InsertScene),
           h(NeuralScene, sceneProps),
@@ -487,9 +755,189 @@ window.__ModuleLoader__.load({
             h('span', null, 'SEQUENCE ' + pad(Math.round(progress * 100)) + '%'),
             h('span', null, 'SYNC ' + sync.toFixed(1) + '%'),
             h('span', { className: 'eva-launch__hint' }, t('skipHint')),
-            h('span', null, 'EVA-01 // CYCLE 0001'))),
+            h('span', null, 'EVA-' + pilot.unit + ' // CYCLE 0001'))),
         h('div', { className: 'eva-launch__hazard' }),
         h('div', { className: 'eva-launch__flash' }));
+    }
+
+    /* ------------------------------------------------------------------ *
+     * Pilot authentication gate — borrows the reference plugin's "choose your
+     * pilot" beat: a portrait, the pilot name, A10 clip status and a start
+     * control.  The click is what unlocks WebAudio (browser autoplay policy).
+     * ------------------------------------------------------------------ */
+    function PilotGate(props) {
+      const pilot = usePilot();
+      const [left, setLeft] = useState(reduceMotion() ? 2 : 9);
+      const [sync, setSync] = useState(0);
+      const [inserting, setInserting] = useState(false);
+      const started = useRef(false);
+      const insertTimer = useRef(0);
+
+      const begin = (withSound) => {
+        if (started.current) return;
+        started.current = true;
+        props.onStart(withSound);
+      };
+
+      const choose = (event, key) => {
+        event.stopPropagation();
+        choosePilot(key);
+      };
+
+      const mask = (file) => ({
+        WebkitMaskImage: 'url(/dsh-eva-unit-01/assets/' + file + ')',
+        maskImage: 'url(/dsh-eva-unit-01/assets/' + file + ')',
+      });
+
+      // Entry-plug sync charge: restarts whenever the pilot changes.
+      useEffect(() => {
+        let raf = 0;
+        const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        const tick = (now) => {
+          const progress = Math.min(1, (now - start) / 1250);
+          setSync(Math.round(progress * 100));
+          if (progress < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+      }, [pilot.key]);
+
+      useEffect(() => {
+        setInserting(false);
+        clearTimeout(insertTimer.current);
+        insertTimer.current = setTimeout(() => setInserting(true), 70);
+        return () => clearTimeout(insertTimer.current);
+      }, [pilot.key]);
+
+      useEffect(() => {
+        if (reduceMotion()) {
+          const timer = setTimeout(() => begin(false), 1400);
+          return () => clearTimeout(timer);
+        }
+        const timer = setInterval(() => setLeft((value) => Math.max(0, value - 1)), 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      useEffect(() => {
+        if (left <= 0) begin(false);
+      }, [left]);
+
+      useEffect(() => {
+        const onKey = (event) => {
+          if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            begin(true);
+          }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+      }, []);
+
+      return h('div', {
+        className: 'eva-gate',
+        role: 'presentation',
+        onClick: () => begin(true),
+      },
+        h('div', { className: 'eva-gate__bg' }),
+        h('div', { className: 'eva-gate__grid' }),
+        h('span', { className: 'eva-gate__atfield', 'aria-hidden': true },
+          h(Art, { name: 'atField' })),
+        h('div', { className: 'eva-gate__top' },
+          h(Art, { name: pilot.head, className: 'eva-gate__mark' }),
+          h('span', { className: 'eva-gate__brand' },
+            h('b', null, 'EVA-' + pilot.unit),
+            h('em', null, pilot.unitJp + ' · 発進管制 / LAUNCH CONTROL')),
+          h('span', { className: 'eva-gate__audio' },
+            h('span', { className: 'eva-gate__audioLed' }),
+            'AUDIO ' + (readSound() ? 'ON' : 'OFF'))),
+        h('div', { className: 'eva-gate__body eva-gate__body--select' },
+          h('div', { className: 'eva-gate__plugScene' },
+            h('span', { className: 'eva-gate__contours', 'aria-hidden': true }),
+            h('div', { className: 'eva-gate__plug' },
+              h('img', {
+                className: 'eva-gate__plugImg',
+                src: '/dsh-eva-unit-01/assets/entry-plug.svg',
+                alt: '',
+              }),
+              h('span', { className: 'eva-gate__plugGlow' }),
+              h('span', {
+                className: 'eva-gate__plugPilot',
+                'data-inserting': inserting ? '1' : '0',
+                style: mask(pilot.assetPortrait),
+              }),
+              h('span', { className: 'eva-gate__plugTag eva-gate__plugTag--top' }, 'ENTRY PLUG / 挿入栓'),
+              h('span', { className: 'eva-gate__plugTag eva-gate__plugTag--bottom' }, 'EVA-' + pilot.unit + ' · ' + pilot.unitJp),
+              h('svg', { className: 'eva-gate__ring', viewBox: '0 0 120 120', 'aria-hidden': true },
+                h('circle', { className: 'eva-gate__ringTrack', cx: 60, cy: 60, r: 52 }),
+                h('circle', {
+                  className: 'eva-gate__ringFill',
+                  cx: 60,
+                  cy: 60,
+                  r: 52,
+                  style: { '--sync': (sync / 100).toFixed(3) },
+                })),
+              h('span', { className: 'eva-gate__sync' }, sync + '%'),
+              h('span', { className: 'eva-gate__syncLabel' }, 'SYNC / 接続'))),
+          h('div', { className: 'eva-gate__console' },
+            h('span', { className: 'eva-gate__eyebrow' }, 'パイロット認証 / PILOT AUTHENTICATION'),
+            h('span', { className: 'eva-gate__title' }, pilot.unitJp + ' 起動'),
+            h('span', { className: 'eva-gate__sub' }, 'EVA-' + pilot.unit + ' // INSERT ENTRY PLUG'),
+            h('span', { className: 'eva-gate__line' }),
+            h('div', { className: 'eva-gate__pilots' },
+              Object.values(PILOTS).map((item) =>
+                h('button', {
+                  key: item.key,
+                  type: 'button',
+                  className: 'eva-gate__pilotBtn',
+                  'data-selected': item.key === pilot.key ? '1' : '0',
+                  onClick: (event) => choose(event, item.key),
+                },
+                  h('span', { className: 'eva-gate__avatar', style: mask(item.assetAvatar) }),
+                  h('span', { className: 'eva-gate__pilotInfo' },
+                    h('b', null, item.name),
+                    h('i', null, item.en),
+                    h('em', null, 'UNIT-' + item.unit + ' · PILOT ' + item.no)),
+                  h('span', { className: 'eva-gate__pilotLed' })))),
+            h('div', { className: 'eva-gate__selectMeta' },
+              h('b', null, pilot.name),
+              h('span', null, pilot.en + ' · PILOT ' + pilot.no),
+              h('i', null, 'A10 · LCL · ' + pilot.unitEn)),
+            h('div', { className: 'eva-gate__actions' },
+              h('button', {
+                type: 'button',
+                className: 'eva-gate__start',
+                onClick: (event) => {
+                  event.stopPropagation();
+                  begin(true);
+                },
+              },
+                h('span', null, '接続開始'),
+                h('em', null, 'INSERT ENTRY PLUG')),
+              h('button', {
+                type: 'button',
+                className: 'eva-gate__muted',
+                onClick: (event) => {
+                  event.stopPropagation();
+                  begin(false);
+                },
+              }, '音声なしで起動 / START MUTED'),
+              h('span', { className: 'eva-gate__hint' }, 'カードで驾驶员更换 · クリック / ENTER で音声 ON')))),
+        h('div', { className: 'eva-gate__foot' },
+          h('span', null, 'AUTO START ' + pad(left)),
+          h('span', null, 'NERV · EVA-' + pilot.unit + ' · ' + pilot.unitJp),
+          h('span', null, 'CYCLE 0001')));
+    }
+
+    function PilotComm(props) {
+      const caption = props && props.caption;
+      if (!caption) return null;
+      const pilot = pilotOf(caption.pilot);
+      return h('div', { className: 'eva-comm', key: caption.id },
+        h(Art, { name: pilot.avatar, className: 'eva-comm__avatar' }),
+        h('span', { className: 'eva-comm__body' },
+          h('span', { className: 'eva-comm__who' }, 'パイロット · ' + pilot.name),
+          h('span', { className: 'eva-comm__jp' }, caption.jp),
+          h('span', { className: 'eva-comm__zh' }, caption.zh)));
     }
 
     /* ------------------------------------------------------------------ *
@@ -536,21 +984,106 @@ window.__ModuleLoader__.load({
     function Hud() {
       const fx = useSignal(fxSignal);
       const berserk = useSignal(berserkSignal);
-      const [run, setRun] = useState(0);
+      const sound = useSignal(soundSignal);
+      const caption = useSignal(captionSignal);
+      const pilot = usePilot();
+      const [gate, setGate] = useState(() => !hasGatePassed());
+      const [run, setRun] = useState(() => (hasGatePassed() ? 0 : -1));
       const [finished, setFinished] = useState(-1);
       const [burstRun, setBurstRun] = useState(0);
-      const [burstDone, setBurstDone] = useState(0);
+      const [burstDone, setBursted] = useState(0);
+      const soundRef = useRef(sound);
+      const lastBerserk = useRef(berserk);
+      soundRef.current = sound;
+
+      const startFromGate = (withSound) => {
+        markGatePassed();
+        if (withSound && soundRef.current) {
+          audio.unlock().then((ok) => {
+            if (ok) {
+              audio.setEnabled(true);
+              audio.sfx('boot');
+              sayLine('gate');
+            }
+          });
+        }
+        setGate(false);
+        setRun((current) => (current < 0 ? 0 : current + 1));
+      };
 
       useEffect(() => launchSignal.subscribe(() => {
-        setRun((current) => current + 1);
+        setGate(false);
+        if (soundRef.current) audio.unlock();
+        setRun((current) => (current < 0 ? 0 : current + 1));
       }), []);
 
       useEffect(() => berserkBurstSignal.subscribe(() => {
         setBurstRun((current) => current + 1);
       }), []);
 
+      useEffect(() => {
+        audio.setBerserk(berserkSignal.get());
+      }, []);
+
+      useEffect(() => {
+        if (berserk === lastBerserk.current) return;
+        lastBerserk.current = berserk;
+        audio.setBerserk(berserk);
+        if (berserk) {
+          audio.sfx('alarm');
+          sayLine('berserk_on');
+        } else {
+          sayLine('berserk_off');
+        }
+      }, [berserk]);
+
+      useEffect(() => () => {
+        clearTimeout(captionTimer);
+      }, []);
+
       const playing = run !== -1 && finished !== run;
       const bursting = burstRun > burstDone;
+
+      const handleScene = (id) => {
+        if (!soundRef.current) return;
+        audio.setPhase(id);
+        if (id === 'boot') {
+          audio.startBoot();
+          sayLine('boot');
+        }
+        if (id === 'pilot') {
+          audio.sfx('boot');
+          sayLine('pilot');
+        }
+        if (id === 'plug') {
+          audio.sfx('lcl');
+          sayLine('plug');
+        }
+        if (id === 'insert') audio.sfx('clamp');
+        if (id === 'neural') {
+          audio.sfx('sync');
+          sayLine('neural');
+        }
+        if (id === 'sync') {
+          audio.sfx('sync');
+          sayLine('sync');
+        }
+        if (id === 'activate') {
+          audio.sfx('clamp');
+          sayLine('activate');
+        }
+        if (id === 'launch') {
+          audio.sfx('launch');
+          sayLine('launch');
+        }
+      };
+
+      const finishLaunch = (index) => {
+        setFinished(index);
+        audio.stopBoot();
+        audio.setPhase(soundRef.current ? 'idle' : 'idle');
+        sayLine('welcome');
+      };
 
       return h(React.Fragment, null,
         h('style', { 'data-eva-one': 'skin' }, CSS),
@@ -568,10 +1101,10 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-corner eva-corner--br' }),
           h('span', { className: 'eva-frame-rail eva-frame-rail--l' },
             h('i', { className: 'eva-frame-rail__text' },
-              berserk ? 'BERSERK · CONTROL LOST' : 'EVANGELION TEST TYPE · UNIT-01')),
+              berserk ? 'BERSERK · CONTROL LOST' : 'EVANGELION · ' + pilot.unitEn)),
           h('span', { className: 'eva-frame-rail eva-frame-rail--r' },
             h('i', { className: 'eva-frame-rail__text' },
-              berserk ? '暴走 · SYNC 412% · AT FIELD DOWN' : 'LAUNCH CONTROL · 発進管制')),
+              berserk ? '暴走 · SYNC 412% · AT FIELD DOWN' : 'PILOT ' + pilot.no + ' · ' + pilot.name)),
           berserk
             ? h('span', { className: 'eva-hud__alert' },
                 h('b', null, 'BERSERK'),
@@ -586,40 +1119,46 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scan' }),
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' })),
+        gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing
           ? h(LaunchSequence, {
               key: run,
-              onDone: () => setFinished(run),
+              onScene: handleScene,
+              onDone: () => finishLaunch(run),
             })
           : null,
         bursting
           ? h(BerserkBurst, {
               key: burstRun,
-              onDone: () => setBurstDone(burstRun),
+              onDone: () => setBursted(burstRun),
             })
-          : null);
+          : null,
+        h(PilotComm, { caption }));
     }
 
     /* ------------------------------------------------------------------ *
      * Brand marks
      * ------------------------------------------------------------------ */
     function BrandMark() {
-      return h('span', { className: 'eva-brandmark' }, h(Art, { name: 'head' }));
+      const pilot = usePilot();
+      return h('span', { className: 'eva-brandmark' }, h(Art, { name: pilot.head }));
     }
 
     function BrandName() {
+      const pilot = usePilot();
       return h('span', { className: 'eva-brandname' },
-        h('span', { className: 'eva-brandname__unit' }, 'EVA-01'),
-        h('span', { className: 'eva-brandname__sub' }, '初号機 / DSH'));
+        h('span', { className: 'eva-brandname__unit' }, 'EVA-' + pilot.unit),
+        h('span', { className: 'eva-brandname__sub' }, pilot.unitJp + ' / DSH'));
     }
 
     function HeroMark() {
+      const pilot = usePilot();
       return h('span', { className: 'eva-hero' },
         h('span', { className: 'eva-hero__glow' }),
-        h(Art, { name: 'head', className: 'eva-hero__mark' }),
+        h(Art, { name: pilot.head, className: 'eva-hero__mark' }),
         h('span', { className: 'eva-hero__text' },
-          h('span', { className: 'eva-hero__tag' }, 'EVA-01'),
-          h('span', { className: 'eva-hero__jp' }, '発進管制')));
+          h('span', { className: 'eva-hero__tag' }, 'EVA-' + pilot.unit),
+          h('span', { className: 'eva-hero__jp' }, pilot.unitJp + ' · 発進管制')));
     }
 
     /* ------------------------------------------------------------------ *
@@ -628,6 +1167,7 @@ window.__ModuleLoader__.load({
     function FooterActions(props) {
       const fx = useSignal(fxSignal);
       const berserk = useSignal(berserkSignal);
+      const sound = useSignal(soundSignal);
       const wide = Boolean(props && props.wide);
       const next = fx === 'full' ? 'lite' : fx === 'lite' ? 'off' : 'full';
       const glyph = fx === 'full' ? '◈' : fx === 'lite' ? '◇' : '○';
@@ -663,6 +1203,17 @@ window.__ModuleLoader__.load({
         h('button', {
           type: 'button',
           className: 'eva-foot__btn',
+          'data-sound': sound ? '1' : '0',
+          'aria-pressed': sound,
+          title: t('soundTitle'),
+          'aria-label': t('soundTitle'),
+          onClick: () => toggleSound(),
+        },
+          h('span', { className: 'eva-foot__glyph', 'aria-hidden': true }, sound ? '♪' : '∅'),
+          wide ? h('span', { className: 'eva-foot__label' }, t('sound')) : null),
+        h('button', {
+          type: 'button',
+          className: 'eva-foot__btn',
           'data-berserk': berserk ? '1' : '0',
           'aria-pressed': berserk,
           title: t('berserkTitle'),
@@ -678,11 +1229,130 @@ window.__ModuleLoader__.load({
      * ------------------------------------------------------------------ */
     const RAIL_TICKS = [3, 6, 4, 9, 5, 12, 7, 14, 6, 10, 4, 8, 5, 11, 7, 9];
 
+    /* ------------------------------------------------------------------ *
+     * NERV workbench strip: account balance (host bridge), clock, original
+     * score transport and a decorative TPS meter. Borrows the reference
+     * plugin's "desktop widget" idea, implemented for this skin.
+     * ------------------------------------------------------------------ */
+    function Workbench() {
+      const clock = useClock();
+      const sound = useSignal(soundSignal);
+      const pilot = usePilot();
+      const [balance, setBalance] = useState({ state: 'loading' });
+
+      useEffect(() => {
+        let alive = true;
+        let attempts = 0;
+        let retryTimer = 0;
+        const load = (force) => {
+          const url = '/dsh-eva-unit-01/balance.json' + (force ? '?refresh=1' : '');
+          fetch(url, { headers: { accept: 'application/json' }, credentials: 'same-origin' })
+            .then((response) => response.json())
+            .then((data) => {
+              attempts = 0;
+              if (alive) setBalance(data && typeof data === 'object' ? data : { ok: false });
+            })
+            .catch(() => {
+              if (!alive) return;
+              setBalance({ ok: false, code: 'OFFLINE' });
+              // The host route can appear a moment after the client module, so
+              // retry a few times before settling on OFFLINE.
+              if (attempts < 3) {
+                attempts += 1;
+                clearTimeout(retryTimer);
+                retryTimer = setTimeout(() => load(false), 2500);
+              }
+            });
+        };
+        load(false);
+        const timer = setInterval(() => load(false), 60000);
+        return () => {
+          alive = false;
+          clearTimeout(retryTimer);
+          clearInterval(timer);
+        };
+      }, []);
+
+      const refresh = () => {
+        setBalance({ state: 'loading' });
+        fetch('/dsh-eva-unit-01/balance.json?refresh=1', {
+          headers: { accept: 'application/json' },
+          credentials: 'same-origin',
+        })
+          .then((response) => response.json())
+          .then((data) => setBalance(data && typeof data === 'object' ? data : { ok: false }))
+          .catch(() => setBalance({ ok: false, code: 'OFFLINE' }));
+      };
+
+      const balanceText = balance && balance.ok
+        ? balance.text
+        : balance && balance.code === 'NO_KEY'
+          ? 'NO KEY'
+          : balance && balance.code
+            ? balance.code
+            : '···';
+
+      return h('div', { className: 'eva-desk' },
+        h('span', { className: 'eva-desk__tag' },
+          h('b', null, 'NERV'),
+          h('i', null, 'WORKBENCH')),
+        h('button', {
+          type: 'button',
+          className: 'eva-desk__cell eva-desk__cell--pilot',
+          title: '切换驾驶员 / CYCLE PILOT',
+          onClick: () => cyclePilot(),
+        },
+          h('i', null, 'PILOT'),
+          h('b', { className: 'eva-desk__value' }, pilot.name),
+          h('em', { className: 'eva-desk__unit' }, 'EVA-' + pilot.unit)),
+        h('span', { className: 'eva-desk__cell eva-desk__cell--balance' },
+          h('i', null, 'BALANCE'),
+          h('b', { className: 'eva-desk__value' }, balanceText),
+          h('button', {
+            type: 'button',
+            className: 'eva-desk__refresh',
+            title: '刷新余额 / REFRESH',
+            'aria-label': '刷新余额',
+            onClick: refresh,
+          }, '↻')),
+        h('span', { className: 'eva-desk__cell' },
+          h('i', null, 'CLOCK'),
+          h('b', { className: 'eva-desk__value' }, clockText(clock))),
+        h('button', {
+          type: 'button',
+          className: 'eva-desk__cell eva-desk__cell--music',
+          title: t('soundTitle'),
+          onClick: () => toggleSound(),
+        },
+          h('i', null, 'SCORE'),
+          h('b', { className: 'eva-desk__value' }, sound ? 'EM-01 ▶' : 'MUTED'),
+          h('span', { className: 'eva-desk__bars', 'aria-hidden': true },
+            [0, 1, 2, 3, 4].map((index) => h('i', { key: index, style: { '--i': index } })))),
+        h('span', { className: 'eva-desk__cell' },
+          h('i', null, 'TPS'),
+          h('span', { className: 'eva-desk__bars eva-desk__bars--tps', 'aria-hidden': true },
+            [0, 1, 2, 3, 4, 5, 6, 7].map((index) => h('i', { key: index, style: { '--i': index } })))));
+    }
+
     function ComposerRail() {
       const clock = useClock();
+      const berserk = useSignal(berserkSignal);
+      const pilot = usePilot();
+      const [sync, setSync] = useState(() => 98.4 + Math.random() * 1.6);
+      useEffect(() => {
+        const timer = setInterval(() => setSync(98.4 + Math.random() * 1.6), 1500);
+        return () => clearInterval(timer);
+      }, []);
       return h('div', { className: 'eva-rail', 'aria-hidden': true },
+        h('span', { className: 'eva-rail__pilot' },
+          h(Art, { name: pilot.avatar, className: 'eva-rail__pilotAvatar' }),
+          h('b', null, pilot.name),
+          h('i', { className: 'eva-rail__heart' }, '♥'),
+          h('span', { className: 'eva-rail__pilotSync' },
+            (berserk ? '412.0' : sync.toFixed(1)) + '%')),
+        h('span', { className: 'eva-rail__sep' }),
         h('span', { className: 'eva-rail__cap' }, 'SYNC'),
-        h('span', { className: 'eva-rail__value' }, '100.0%'),
+        h('span', { className: 'eva-rail__value' }, berserk ? '412.0%' : '100.0%'),
         h('span', { className: 'eva-rail__ticks' },
           RAIL_TICKS.map((height, index) => h('i', { key: index, style: { '--eva-tick': height } }))),
         h('span', { className: 'eva-rail__sep' }),
@@ -703,15 +1373,20 @@ window.__ModuleLoader__.load({
     function StatusBar() {
       const clock = useClock();
       const berserk = useSignal(berserkSignal);
+      const pilot = usePilot();
       return h('div', { className: 'eva-status', 'data-berserk': berserk ? '1' : '0' },
         h('div', { className: 'eva-status__main', 'aria-hidden': true },
           h('span', { className: 'eva-status__unit' },
             h('span', { className: 'eva-status__hex' }),
-            'EVA-01'),
+            'EVA-' + pilot.unit),
           h('span', { className: 'eva-status__rule' }),
           h('span', { className: 'eva-status__tag' },
             berserk ? '暴走 / BERSERK' : '発進管制 / LAUNCH CONTROL'),
           h('span', { className: 'eva-status__sep' }),
+          h('span', { className: 'eva-status__pilot' },
+            h(Art, { name: pilot.avatar, className: 'eva-status__pilotAvatar' }),
+            h('b', null, 'PILOT ' + pilot.no),
+            h('i', { className: 'eva-status__heart' }, '♥')),
           h('span', { className: 'eva-status__metric' }, 'SYNC',
             h('b', null, berserk ? '412.0%' : '100.0%'),
             h('span', { className: 'eva-status__bars' },
@@ -747,14 +1422,15 @@ window.__ModuleLoader__.load({
      * ------------------------------------------------------------------ */
     function HeaderTag() {
       const berserk = useSignal(berserkSignal);
+      const pilot = usePilot();
       return h('span', {
         className: 'eva-headtag',
         'data-berserk': berserk ? '1' : '0',
         'aria-hidden': true,
       },
         h('span', { className: 'eva-headtag__led' }),
-        h('span', { className: 'eva-headtag__unit' }, 'EVA-01'),
-        h('span', { className: 'eva-headtag__sub' }, berserk ? 'BERSERK' : 'TEST TYPE'));
+        h('span', { className: 'eva-headtag__unit' }, 'EVA-' + pilot.unit),
+        h('span', { className: 'eva-headtag__sub' }, berserk ? 'BERSERK' : 'PILOT ' + pilot.no));
     }
 
     /* ------------------------------------------------------------------ *
@@ -777,6 +1453,36 @@ window.__ModuleLoader__.load({
       '--dsw-specific-sidebar-fill': { light: '#e9e1f5', dark: '#0a0614' },
     };
 
+    const PILOT_TOKENS = {
+      '01': TOKENS,
+      '02': {
+        ...TOKENS,
+        '--dsw-alias-bg-base': { light: '#fbf1ec', dark: '#0c0506' },
+        '--dsw-alias-bg-layer-1': { light: '#fff8f3', dark: '#160909' },
+        '--dsw-alias-bg-layer-2': { light: '#fffdfb', dark: '#1f0c0c' },
+        '--dsw-alias-bg-overlay': { light: '#ffffff', dark: '#2b0d0d' },
+        '--dsw-alias-border-l1': { light: '#eaccc0', dark: '#3f1a1a' },
+        '--dsw-alias-border-l2': { light: '#d8a08c', dark: '#5c2222' },
+        '--dsw-alias-brand-primary': { light: '#c22a12', dark: '#ff7a1a' },
+        '--dsw-alias-label-primary': { light: '#2a0e0b', dark: '#ffe9e3' },
+        '--dsw-alias-label-secondary': { light: '#6d4a42', dark: '#d8b3a9' },
+        '--dsw-specific-sidebar-fill': { light: '#f3ded4', dark: '#100607' },
+      },
+      '00': {
+        ...TOKENS,
+        '--dsw-alias-bg-base': { light: '#eef4f8', dark: '#050a0e' },
+        '--dsw-alias-bg-layer-1': { light: '#f6fafd', dark: '#0a1218' },
+        '--dsw-alias-bg-layer-2': { light: '#fbfdff', dark: '#0e1a22' },
+        '--dsw-alias-bg-overlay': { light: '#ffffff', dark: '#142732' },
+        '--dsw-alias-border-l1': { light: '#c8dbe6', dark: '#1e3441' },
+        '--dsw-alias-border-l2': { light: '#9fc0d3', dark: '#2e4c5e' },
+        '--dsw-alias-brand-primary': { light: '#2c6f96', dark: '#8fd4f2' },
+        '--dsw-alias-label-primary': { light: '#0d1a22', dark: '#e6f4fb' },
+        '--dsw-alias-label-secondary': { light: '#4a6373', dark: '#a8c4d4' },
+        '--dsw-specific-sidebar-fill': { light: '#e2eef5', dark: '#060d12' },
+      },
+    };
+
     /* ------------------------------------------------------------------ *
      * Plugin
      * ------------------------------------------------------------------ */
@@ -792,11 +1498,60 @@ window.__ModuleLoader__.load({
             const dark = document.body.hasAttribute('data-ds-dark-theme');
             theme.setTheme(dark ? 'light' : 'dark');
           };
+        }
+
+        // The selected pilot owns the page: this attribute drives every
+        // pilot-specific accent and background, and the token set is swapped
+        // live so switching pilot repaints the host surfaces immediately.
+        ctx.effect(() => {
+          const applyPilot = () => {
+            try {
+              document.body.setAttribute('data-eva-pilot', currentPilot().unit);
+            } catch (error) {
+              /* document unavailable */
+            }
+          };
+          applyPilot();
+          const dispose = pilotSignal.subscribe(applyPilot);
+          return () => {
+            dispose();
+            try {
+              document.body.removeAttribute('data-eva-pilot');
+            } catch (error) {
+              /* nothing to clean up */
+            }
+          };
+        });
+
+        if (theme) {
           ctx.effect(() => {
-            const dispose = theme.overrideTokens('dsh-eva-unit-01-skin', TOKENS);
-            return () => dispose();
+            let disposeTokens = null;
+            const applyTokens = () => {
+              if (disposeTokens) disposeTokens();
+              disposeTokens = theme.overrideTokens(
+                'dsh-eva-unit-01-skin',
+                PILOT_TOKENS[currentPilot().unit] || TOKENS,
+              );
+            };
+            applyTokens();
+            const dispose = pilotSignal.subscribe(applyTokens);
+            return () => {
+              dispose();
+              if (disposeTokens) disposeTokens();
+            };
           });
         }
+
+        // Audio engine: original synthesised score + SFX + system TTS.  The
+        // AudioContext is only created after a user gesture (gate / replay /
+        // sound button), never during page start.
+        ctx.effect(() => {
+          audio.setEnabled(readSound());
+          return () => {
+            clearTimeout(captionTimer);
+            audio.dispose();
+          };
+        });
 
         const locale = ctx.get('locale');
         if (locale) {
@@ -811,6 +1566,8 @@ window.__ModuleLoader__.load({
                 skipHint: 'ESC / SKIP to abort',
                 berserk: 'BERSERK',
                 berserkTitle: 'Toggle Unit-01 berserk mode',
+                sound: 'SOUND',
+                soundTitle: 'Toggle music, SFX and pilot voice',
               }),
               locale.register('eva', 'zh-CN', {
                 replay: '重播初号机启动序列',
@@ -820,6 +1577,8 @@ window.__ModuleLoader__.load({
                 skipHint: 'ESC / SKIP 可跳过',
                 berserk: '暴走',
                 berserkTitle: '切换初号机暴走状态',
+                sound: '音声',
+                soundTitle: '开关配乐、音效与驾驶员语音',
               }),
               locale.register('eva', 'zh', {
                 replay: '重播初号机启动序列',
@@ -829,6 +1588,8 @@ window.__ModuleLoader__.load({
                 skipHint: 'ESC / SKIP 可跳过',
                 berserk: '暴走',
                 berserkTitle: '切换初号机暴走状态',
+                sound: '音声',
+                soundTitle: '开关配乐、音效与驾驶员语音',
               }),
             ];
             return () => registrations.forEach((dispose) => dispose());
@@ -931,8 +1692,14 @@ window.__ModuleLoader__.load({
           replaceSingle('conversation.hero.brand.mark', HeroMark),
         );
 
-        ctx.slots.inject('conversation.input.dock', () =>
-          ctx.slots.register({ name: 'conversation.input.dock', id: 'eva-01-rail', order: 40 }, ComposerRail));
+        ctx.slots.inject('conversation.input.dock', () => {
+          const desk = ctx.slots.register({ name: 'conversation.input.dock', id: 'eva-01-desk', order: 39 }, Workbench);
+          const rail = ctx.slots.register({ name: 'conversation.input.dock', id: 'eva-01-rail', order: 40 }, ComposerRail);
+          return () => {
+            desk();
+            rail();
+          };
+        });
 
         ctx.slots.inject('sidebar.footer.action', () =>
           ctx.slots.register({ name: 'sidebar.footer.action', id: 'eva-01-controls', order: 40 }, FooterActions));

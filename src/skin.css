@@ -6211,3 +6211,8 @@ body:has([data-collapsed="true"]) .eva-canopy { left: 56px; }
   cursor: pointer;
 }
 .eva-gate__change:hover { color: var(--eva-accent); border-color: var(--eva-accent); }
+
+/* Pilot photo framing: keep the face visible for each supplied portrait. */
+body[data-eva-pilot="01"] .eva-cp__portrait img { object-position: 50% 28%; }
+body[data-eva-pilot="02"] .eva-cp__portrait img { object-position: 50% 30%; }
+body[data-eva-pilot="00"] .eva-cp__portrait img { object-position: 50% 68%; }

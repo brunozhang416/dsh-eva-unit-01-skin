@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" width="200" height="56" role="img" aria-label="EVA-01 HUD badge">
+  <!-- plate: set `color` on the wrapper to recolour; class .accent recolours the eye + rule -->
+  <path d="M12 1H178L199 28 178 55H12L1 28Z" fill="currentColor"/>
+  <path d="M12 1H178L199 28 178 55H12L1 28Z" fill="none" stroke="#050409" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M15 6H175L190 28 175 50H15L5 28Z" fill="#050409" fill-opacity=".8"/>
+  <path d="M15 6H175L190 28 175 50H15L5 28Z" fill="none" stroke="#B98BE0" stroke-opacity=".45" stroke-width="1"/>
+
+  <!-- mini emblem -->
+  <path d="M22 9 34 16V36L22 43 10 36V16Z" fill="#1A0B2E" stroke="#6B5F80" stroke-width="1.5" stroke-linejoin="miter"/>
+  <path d="M22 14 28 17V24L22 27 16 24V17Z" fill="#4B1D7A"/>
+
+  <!-- accent: single recolourable path (eye + baseline rule) -->
+  <path class="accent" fill="#9DFF4A" d="M14.5 27 28 22.8 29 30.5 15.5 34.7Z M40 40H118L115 43H40Z"/>
+
+  <text x="40" y="16" font-family="ui-monospace, Menlo, monospace" font-size="7.5" letter-spacing="1.6" fill="#6B5F80">LAUNCH SEQUENCE</text>
+  <text x="40" y="35" font-family="ui-monospace, Menlo, monospace" font-size="21" font-weight="700" letter-spacing="2.4" fill="#E9E2F5">EVA-01</text>
+  <text x="189" y="35" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="14" letter-spacing="1" fill="#B98BE0">初号機</text>
+  <text x="189" y="16" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="7" letter-spacing="1.4" fill="#6B5F80">SYNC 100%</text>
+  <path d="M172 45h13M175 49h10" stroke="#6B5F80" stroke-width="1.5"/>
+</svg>

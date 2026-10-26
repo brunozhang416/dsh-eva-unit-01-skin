@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Seamless 45 degree hazard stripes">
+  <!-- 24x24 tile. Stripe centre lines are y = x + 8k, so the pattern repeats
+       seamlessly every 24px in x and y (8 divides 24). -->
+  <rect width="24" height="24" fill="#050409"/>
+  <g stroke="#FFD400" stroke-width="2.83" stroke-linecap="butt">
+    <path d="M -30 -54 L 54 30"/>
+    <path d="M -30 -46 L 54 38"/>
+    <path d="M -30 -38 L 54 46"/>
+    <path d="M -30 -30 L 54 54"/>
+    <path d="M -30 -22 L 54 62"/>
+    <path d="M -30 -14 L 54 70"/>
+    <path d="M -30 -6 L 54 78"/>
+  </g>
+</svg>

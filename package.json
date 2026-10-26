@@ -1,0 +1,51 @@
+{
+  "name": "dsh-eva-unit-01-skin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EVA Unit-01 launch-console skin for the DeepSeek Harness Web GUI: seven-scene boot sequence, NERV-style HUD, mecha chrome and a berserk mode.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./art/icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "art/*.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brunozhang416/dsh-eva-unit-01-skin.git"
+  },
+  "homepage": "https://github.com/brunozhang416/dsh-eva-unit-01-skin#readme",
+  "bugs": {
+    "url": "https://github.com/brunozhang416/dsh-eva-unit-01-skin/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "theme",
+    "eva",
+    "evangelion",
+    "skin"
+  ]
+}

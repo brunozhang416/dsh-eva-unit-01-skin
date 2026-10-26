@@ -156,6 +156,23 @@ window.__ModuleLoader__.load({
         assetAvatar: 'avatar-shinji.png',
         assetPortrait: 'portrait-shinji.png',
         photo: true,
+        voice: { rate: 0.86, pitch: 1.02, volume: 0.88, prefer: ['eddy', 'reed', 'kyoko'] },
+        voiceLabel: 'BOYISH',
+        intro: { jp: 'こんにちは。碇シンジです。……よろしく。', zh: '你好，我是碇真嗣。……请多指教。' },
+        lines: {
+          gate: { jp: 'ゲートの前で、足が止まる', zh: '在闸门前，脚迈不动。' },
+          boot: { jp: 'システム、起動した…？', zh: '系统…启动了吗？' },
+          pilot: { jp: 'パイロット、搭乗します', zh: '驾驶员，开始登机。' },
+          plug: { jp: 'プラグ、入るの…怖い', zh: '插入栓要进去了…好怕。' },
+          neural: { jp: '神経、つながってく…', zh: '神经…正在接上。' },
+          sync: { jp: 'シンクロ率、上がってる', zh: '同步率在往上走。' },
+          activate: { jp: '初号機が、動き出した', zh: '初号机…动起来了。' },
+          launch: { jp: '発進、します…！', zh: '要…出发了！' },
+          welcome: { jp: '来てくれた…うれしい', zh: '你来了…我很高兴。' },
+          berserk_on: { jp: '止まらない、誰か止めて', zh: '停不下来…谁来拦住它！' },
+          berserk_off: { jp: '…戻った、の？', zh: '……回来了吗？' },
+          complete: { jp: '生きてる…よかった', zh: '还活着…太好了。' },
+        },
       },
       asuka: {
         key: 'asuka',
@@ -172,6 +189,23 @@ window.__ModuleLoader__.load({
         assetAvatar: 'avatar-asuka.png',
         assetPortrait: 'portrait-asuka.png',
         photo: true,
+        voice: { rate: 1.12, pitch: 1.38, volume: 1, prefer: ['kyoko', 'sandy', 'flo'] },
+        voiceLabel: 'BRIGHT',
+        intro: { jp: 'あたし、明日香。よろしくね。', zh: '我是明日香。请多指教。' },
+        lines: {
+          gate: { jp: '私に任せなさい！', zh: '交给我吧！' },
+          boot: { jp: 'システム、起動ね。', zh: '系统，启动了呢。' },
+          pilot: { jp: 'アスカ、搭乗するわ。', zh: '明日香，登机。' },
+          plug: { jp: 'プラグ、装着！', zh: '插入栓，装着！' },
+          neural: { jp: '神経接続、完了。', zh: '神经连接，完成。' },
+          sync: { jp: 'シンクロ率、見てなさい！', zh: '看看同步率吧！' },
+          activate: { jp: '二号機、起動！', zh: '二号机，启动！' },
+          launch: { jp: '発進よ！', zh: '出发！' },
+          welcome: { jp: '戻ったわ。何するの？', zh: '我回来了。要做什么？' },
+          berserk_on: { jp: 'うわっ…制御不能！？', zh: '哇……控制不住了！？' },
+          berserk_off: { jp: '……戻ったわね。', zh: '……回来了呢。' },
+          complete: { jp: '任務完了！', zh: '任务完成！' },
+        },
       },
       rei: {
         key: 'rei',
@@ -188,6 +222,23 @@ window.__ModuleLoader__.load({
         assetAvatar: 'avatar-rei.png',
         assetPortrait: 'portrait-rei.png',
         photo: true,
+        voice: { rate: 0.72, pitch: 0.72, volume: 0.7, prefer: ['shelley', 'flo', 'kyoko'] },
+        voiceLabel: 'COLD',
+        intro: { jp: '……綾波レイ。よろしく。', zh: '……绫波丽。请多指教。' },
+        lines: {
+          gate: { jp: '……指示をください。', zh: '……请下指示。' },
+          boot: { jp: 'システム、起動。', zh: '系统，启动。' },
+          pilot: { jp: '綾波レイ、搭乗します。', zh: '绫波丽，登机。' },
+          plug: { jp: 'プラグ、接続。', zh: '插入栓，连接。' },
+          neural: { jp: '神経、接続。', zh: '神经，连接。' },
+          sync: { jp: 'シンクロ、上昇。', zh: '同步率，上升。' },
+          activate: { jp: '零号機、起動。', zh: '零号机，启动。' },
+          launch: { jp: '発進します。', zh: '出发。' },
+          welcome: { jp: 'おかえりなさい。', zh: '欢迎回来。' },
+          berserk_on: { jp: '……制御、できません。', zh: '……无法控制。' },
+          berserk_off: { jp: '……戻りました。', zh: '……回来了。' },
+          complete: { jp: '任務、完了。', zh: '任务，完成。' },
+        },
       },
     };
 
@@ -210,11 +261,8 @@ window.__ModuleLoader__.load({
     function choosePilot(key) {
       if (!PILOTS[key]) return;
       setPilot(key);
-      if (soundSignal.get()) {
-        audio.unlock().then((ok) => {
-          if (ok) sayLine('gate');
-        });
-      }
+      sayIntro(key);
+      if (soundSignal.get()) audio.unlock();
     }
 
     function cyclePilot() {
@@ -230,33 +278,50 @@ window.__ModuleLoader__.load({
     let captionSeq = 0;
     let captionTimer = 0;
 
-    // All pilots share one armoured system cue; captions are NERV status
-    // read-outs rather than character dialogue.
-    const SYSTEM_LINES = {
-      gate: { jp: 'パイロット、承認待ち', zh: '等待驾驶员确认' },
-      boot: { jp: 'システム、起動', zh: '系统，启动' },
-      pilot: { jp: 'パイロット、搭乗', zh: '驾驶员，登机' },
-      plug: { jp: 'プラグ、接続', zh: '插入栓，连接' },
-      neural: { jp: '神経接続', zh: '神经连接' },
-      sync: { jp: 'シンクロ率、上昇', zh: '同步率，上升' },
-      activate: { jp: '機体、起動', zh: '机体，启动' },
-      launch: { jp: '発進', zh: '出发' },
-      welcome: { jp: '接続完了', zh: '连接完成' },
-      berserk_on: { jp: '警告、制御不能', zh: '警告，控制失效' },
-      berserk_off: { jp: '制御、復帰', zh: '控制，恢复' },
-    };
-
     function sayLine(key) {
-      const line = SYSTEM_LINES[key];
+      const pilot = currentPilot();
+      const line = pilot.lines[key];
       if (!line) return;
       captionSeq += 1;
       const current = captionSeq;
-      captionSignal.set({ id: current, jp: line.jp, zh: line.zh });
+      captionSignal.set({ id: current, jp: line.jp, zh: line.zh, pilot: pilot.key });
       clearTimeout(captionTimer);
       captionTimer = setTimeout(() => {
         if (captionSeq === current) captionSignal.set(null);
-      }, 3600);
-      if (soundSignal.get()) audio.systemCue(key);
+      }, 4600);
+      if (soundSignal.get()) {
+        audio.speak(line.jp, {
+          lang: 'ja-JP',
+          rate: pilot.voice.rate,
+          pitch: pilot.voice.pitch,
+          volume: pilot.voice.volume,
+          voice: pilot.voice.prefer,
+        });
+      }
+    }
+
+    // Pilot self-introduction played when a card is picked (and when the
+    // workbench cycles pilots).
+    function sayIntro(key) {
+      const pilot = pilotOf(key);
+      const line = pilot.intro;
+      if (!line) return;
+      captionSeq += 1;
+      const current = captionSeq;
+      captionSignal.set({ id: current, jp: line.jp, zh: line.zh, pilot: pilot.key });
+      clearTimeout(captionTimer);
+      captionTimer = setTimeout(() => {
+        if (captionSeq === current) captionSignal.set(null);
+      }, 5200);
+      if (soundSignal.get()) {
+        audio.speak(line.jp, {
+          lang: 'ja-JP',
+          rate: pilot.voice.rate,
+          pitch: pilot.voice.pitch,
+          volume: pilot.voice.volume,
+          voice: pilot.voice.prefer,
+        });
+      }
     }
 
     function toggleSound() {
@@ -959,7 +1024,7 @@ window.__ModuleLoader__.load({
             h('div', { className: 'eva-gate__selectMeta' },
               h('b', null, pilot.name),
               h('span', null, pilot.en + ' · PILOT ' + pilot.no),
-              h('i', null, 'A10 · LCL · ' + pilot.unitEn + ' · SYSTEM AUDIO')),
+              h('i', null, 'A10 · LCL · ' + pilot.unitEn + ' · VOICE ' + pilot.voiceLabel)),
             h('div', { className: 'eva-gate__actions' },
               h('button', {
                 type: 'button',
@@ -993,10 +1058,11 @@ window.__ModuleLoader__.load({
     function PilotComm(props) {
       const caption = props && props.caption;
       if (!caption) return null;
+      const pilot = pilotOf(caption.pilot || pilotSignal.get());
       return h('div', { className: 'eva-comm', key: caption.id },
-        h(Art, { name: 'a10Clip', className: 'eva-comm__systemIcon' }),
+        h(PilotImage, { pilot, kind: 'avatar', className: 'eva-comm__avatar' }),
         h('span', { className: 'eva-comm__body' },
-          h('span', { className: 'eva-comm__who' }, 'NERV SYSTEM · 装甲音声'),
+          h('span', { className: 'eva-comm__who' }, 'パイロット · ' + pilot.name),
           h('span', { className: 'eva-comm__jp' }, caption.jp),
           h('span', { className: 'eva-comm__zh' }, caption.zh)));
     }

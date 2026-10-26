@@ -35,7 +35,7 @@ function createEvaAudio() {
     bellBus: null, bellDelay: null, bellFeedback: null, bellTone: null, bellWet: null,
     shimmerGain: null, shimmerSource: null, rumbleGain: null, rumbleSource: null,
     berserkBus: null, berserkPulseIn: null, berserkSirenBus: null, berserkSirenFilter: null,
-    angelBus: null, angelTimer: 0, angelNext: 0, angelBeat: 0, wantAngel: false,
+    angelBus: null, angelTimer: 0, angelNext: 0, angelBeat: 0, wantAngel: false, speechBed: null,
     speech: { queue: [], active: false, timer: 0, task: null, voice: null },
   };
   /* Original 4-bar progression, one chord per bar:
@@ -153,6 +153,11 @@ function createEvaAudio() {
     state.score = makeGain(0.0001, null); state.duck = makeGain(1, state.master); state.score.connect(state.duck);
     state.angelBus = makeGain(0.0001, state.master);
     state.sfxBus = makeGain(0.85, state.master);
+    /* low radio-static bed under pilot speech: a simulated comm timbre */
+    var bedSource = ctx.createBufferSource(); bedSource.buffer = state.noiseBuffer; bedSource.loop = true;
+    var bedFilter = makeFilter('bandpass', 1250, 2.2, null);
+    state.speechBed = makeGain(0.0001, state.master);
+    bedSource.connect(bedFilter); bedFilter.connect(state.speechBed); bedSource.start();
     /* pad: detuned triangle/saw pairs per chord into one slow low-pass */
     state.padBus = makeGain(1, null);
     state.padFilter = makeFilter('lowpass', 780, 0.7, state.score); state.padBus.connect(state.padFilter);
@@ -524,6 +529,10 @@ function createEvaAudio() {
     if (!state.ctx || !state.duck) return;
     try { rampParam(state.duck.gain, on ? 0.25 : 1, now(), on ? 0.18 : 0.4); } catch (error) {}
   }
+  function speechBed(on) {
+    if (!state.ctx || !state.speechBed) return;
+    try { rampParam(state.speechBed.gain, on ? 0.014 : 0.0001, now(), on ? 0.12 : 0.2); } catch (error) {}
+  }
   function pumpSpeech() {
     var speech = state.speech;
     if (state.disposed || speech.active) return;
@@ -545,13 +554,15 @@ function createEvaAudio() {
         finished = true;
         if (speech.timer) { try { clearTimeout(speech.timer); } catch (error) {} speech.timer = 0; }
         speech.active = false; speech.task = null;
+        speechBed(false);
         try { task.resolve(); } catch (error) {}
         pumpSpeech();
       };
       utterance.onend = finish; utterance.onerror = finish; utterance.oncancel = finish;
       /* Some engines never fire end without an installed voice: never hang. */
       speech.timer = setTimeout(finish, Math.max(2800, task.text.length * 140) + 3000);
-      setDuck(true); synth.speak(utterance);
+      try { playTone(state.sfxBus, now() + 0.01, { type: 'square', freq: 1280, peak: 0.012, attack: 0.002, decay: 0.05, filter: 'bandpass', filterFreq: 1800, q: 2.4 }); } catch (error) {}
+      speechBed(true); setDuck(true); synth.speak(utterance);
     } catch (error) {
       speech.active = false; speech.task = null; setDuck(false);
       try { task.resolve(); } catch (ignored) {}
@@ -565,6 +576,7 @@ function createEvaAudio() {
     if (speech.task) { pending.unshift(speech.task); speech.task = null; }
     speech.active = false;
     for (var i = 0; i < pending.length; i += 1) { try { pending[i].resolve(); } catch (error) {} }
+    speechBed(false);
     setDuck(false);
   }
 

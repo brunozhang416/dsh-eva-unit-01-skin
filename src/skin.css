@@ -586,8 +586,8 @@ body {
   bottom: 9%;
   height: 62%;
   overflow: hidden;
-  border: 1px solid rgba(157, 255, 74, 0.3);
-  background: rgba(5, 4, 10, 0.68);
+  border: 1px solid rgba(255, 178, 56, 0.35);
+  background: rgba(8, 4, 2, 0.68);
 }
 .eva-plug__lclFill {
   position: absolute;
@@ -595,7 +595,13 @@ body {
   right: 0;
   bottom: 0;
   height: 82%;
-  background: linear-gradient(180deg, rgba(157, 255, 74, 0.5), rgba(77, 255, 176, 0.14));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 154, 26, 0.62) 0%,
+    rgba(255, 212, 0, 0.26) 55%,
+    rgba(255, 106, 26, 0.14) 100%
+  );
+  box-shadow: 0 0 24px rgba(255, 170, 40, 0.35);
   animation: eva-lcl-fill 2.2s cubic-bezier(0.3, 0.7, 0.3, 1) 0.15s both;
 }
 .eva-plug__lclFill::before {
@@ -605,7 +611,7 @@ body {
   left: 0;
   right: 0;
   height: 5px;
-  background: repeating-linear-gradient(90deg, rgba(198, 255, 0, 0.75) 0 7px, transparent 7px 14px);
+  background: repeating-linear-gradient(90deg, rgba(255, 228, 128, 0.9) 0 7px, transparent 7px 14px);
   animation: eva-surface 1.6s linear infinite;
 }
 .eva-plug__bubbles i {
@@ -615,7 +621,7 @@ body {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: rgba(198, 255, 0, 0.8);
+  background: rgba(255, 226, 110, 0.85);
   animation: eva-bubble 2.3s linear infinite;
   animation-delay: calc(var(--i) * -0.32s);
 }
@@ -626,7 +632,7 @@ body {
   width: 34%;
   height: 8%;
   transform: translateX(-50%);
-  border: 1px solid rgba(157, 255, 74, 0.4);
+  border: 1px solid rgba(255, 190, 70, 0.42);
   background: rgba(26, 11, 46, 0.8);
 }
 .eva-plug__clamp {
@@ -655,7 +661,7 @@ body {
   text-align: center;
   font-size: 9px;
   letter-spacing: 0.2em;
-  color: rgba(157, 255, 74, 0.8);
+  color: rgba(255, 200, 96, 0.9);
 }
 
 /* --- scene 3: entry-plug lock --- */

@@ -1,6 +1,6 @@
 {
   "name": "dsh-eva-unit-01-skin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "EVA Unit-01 launch-console skin for the DeepSeek Harness Web GUI: seven-scene boot sequence, NERV-style HUD, mecha chrome and a berserk mode.",

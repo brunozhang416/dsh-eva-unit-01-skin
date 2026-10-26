@@ -22,6 +22,8 @@
 
 跳过方式：右上 `SKIP`、`Esc`、`Space`、`Enter`；点画面其他位置不会误跳过。系统开启「减少动态效果」时改为 2.7s 静态三拍，不会只剩黑屏。
 
+![パイロット搭乗 — amber LCL injection](docs/launch-amber-lcl.jpg)
+
 ### 机甲化主界面
 
 - 底部全宽遥测条：`EVA-01 / 発進管制 / SYNC / MAGI / POWER / A.T. FIELD / LCL / 波形 / 时钟 / CYCLE`

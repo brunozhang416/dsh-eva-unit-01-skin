@@ -19,6 +19,7 @@ const ASSET_FILES = new Map([
   ['portrait-asuka.png', 'image/png'],
   ['portrait-rei.png', 'image/png'],
   ['entry-plug.svg', 'image/svg+xml'],
+  ['nerv-emergency.svg', 'image/svg+xml'],
 ]);
 const ASSET_ROOT = new URL('./assets/', import.meta.url);
 

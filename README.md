@@ -3,9 +3,19 @@
 把 **DeepSeek Harness Web GUI** 改成 EVA 启动控制台的皮肤插件（Cordis bundle，Host 提供余额/素材路由，Client 负责全部界面）。
 
 - 包名：`dsh-eva-unit-01-skin`
-- 当前版本：**v1.2.0**
+- 当前版本：**v1.3.0**
 - 形态：Client 侧皮肤插件 + 只读 Host 路由（余额、驾驶员素材）
 - 适配：Harness Desktop / Web 客户端，深色与浅色两套宿主配色
+
+## 启动警报（NERV EMERGENCY）
+
+每次打开页面先播放约 3 秒的 **NERV 紧急警报**：
+
+- 红色六边形 EMERGENCY 蜂巢、NERV 衬线字标、`God's In His Heaven / All's Right With The World`、实时倒计时 `03:29:59`
+- 红色脉冲、扫描线、轻微画面呼吸与闪烁；用户点击任意处会触发警报音效
+- 警报结束后自动进入驾驶员确认界面（驾驶员选择本身不会自动跳过）
+
+![NERV 启动警报](docs/alarm.jpg)
 
 ## 三名驾驶员 · 三台机体页面
 
@@ -29,7 +39,8 @@
 - 右侧三张驾驶员卡：闭眼线稿头像 + 姓名 + 机体编号，选中卡描边、LED 与光晕点亮
 - 切换驾驶员时：插入栓内立绘重播插入动画，同步环从 0→100% 充能，`SYNC` 数字实时跳动
 - 插入栓窗口内的驾驶员线稿与同步环叠加显示；`接続開始` 进入八幕启动序列
-- 8 秒无操作自动静音启动；`音声なしで起動` 可静音；`ESC / ENTER` 键盘启动
+- **必须人工确认**：先点选驾驶员卡（选中后 `接続開始` 才可用），再点击 `接続開始` 或 `音声なしで起動`；没有倒计时、没有点击空白跳过、没有自动启动
+- 每次打开/刷新页面都会先播放警报并停留在选人界面，直到你手动确认
 - 支持 `prefers-reduced-motion`（保留静态选人与声音）
 
 ![EVA-02 / 明日香页面](docs/pilot-asuka.jpg)
@@ -51,7 +62,7 @@
 ## 配乐 / 音效 / 驾驶员语音（原创合成）
 
 - **原创配乐**：WebAudio 运行时合成 4 小节循环（Em(add9) → Cmaj7 → Am(add9) → B7sus4，52 BPM；pad + 低音脉冲 + 心跳 + 钟琴动机 + 噪声微光），启动阶段逐层加入，进入主界面后降为 idle 环境声。**没有音频文件、没有现成歌曲。**
-- **原创音效**：`beep / alarm / clamp / lcl / sync / launch / typing / boot` 全部实时合成。
+- **原创音效**：`beep / alarm / clamp / lcl / sync / launch / typing / boot` 全部实时合成；启动警报界面首次点击会播放警报音。
 - **驾驶员语音**：系统 TTS（优先日语语音）朗读为每名驾驶员**原创**的短句；说话时配乐自动压低。台词见 [`art/pilot-copy.md`](art/pilot-copy.md)。
 - **字幕**：启动分镜与暴走时右上角显示驾驶员通讯字幕（日语 + 中文），可叠在启动动画之上。
 - **静音**：侧栏底部 `♪ 音声` 或底部遥测会统一开关；状态持久化 `eva01.sound`。
@@ -142,6 +153,8 @@ node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进
 | `art/*.svg` | 原创矢量：机体头像 / 徽章 / 驾驶员线稿源 / AT 力场 |
 | `assets/*.png` | 选人界面线稿与机体立绘（见 NOTICE） |
 | `assets/entry-plug.svg` | 插入栓素材（见 NOTICE） |
+| `assets/nerv-emergency.svg` | NERV 警报底图（见 NOTICE） |
+| `assets/avatar-shinji.png` / `portrait-shinji.png` | 项目所有者提供的碇真嗣插画裁切 |
 | `client.js` | 构建产物 |
 
 ## 兼容性与边界
@@ -154,7 +167,7 @@ node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进
 ## 素材与授权
 
 - 代码与原创矢量/音频/台词：MIT（见 `LICENSE`）。
-- 选人界面的 **明日香 / 绫波丽线稿 PNG** 与 **插入栓 SVG** 来自 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)，按其仓库说明其媒体素材不在 MIT 覆盖范围内；本仓库按用户要求引用并保留署名，权利归原作者。插入栓 SVG 做了 XML 合法性与内联样式修复。见 [`NOTICE.md`](NOTICE.md)。
+- 选人界面的 **明日香 / 绫波丽线稿 PNG**、**插入栓 SVG** 与 **NERV 警报 SVG** 来自 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)，按其仓库说明其媒体素材不在 MIT 覆盖范围内；本仓库按用户要求引用并保留署名，权利归原作者。插入栓 SVG 做了 XML 合法性与内联样式修复；警报 SVG 移除了中间的 NERV 文案与时钟文字，改由界面层渲染。碇真嗣图像使用项目所有者提供的插画素材裁切，版权归提供者。见 [`NOTICE.md`](NOTICE.md)。
 - 碇シンジ线稿由本插件原创的矢量立绘转为线稿；角色服装/随身听/耳机等设计参考用户提供的概念图与插画，不复制原始画面。
 - 不包含官方动画音轨、声优录音或官方美术素材；角色名与机体名为致敬性引用，本项目为非商业粉丝作品。
 

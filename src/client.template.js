@@ -152,6 +152,7 @@ window.__ModuleLoader__.load({
         head: 'head',
         assetAvatar: 'avatar-shinji.png',
         assetPortrait: 'portrait-shinji.png',
+        photo: true,
         voice: { rate: 0.95, pitch: 1.05 },
         lines: {
           gate: { jp: 'ゲートの前で、足が止まる', zh: '在闸门前，脚迈不动。' },
@@ -338,6 +339,25 @@ window.__ModuleLoader__.load({
       });
     }
 
+    function PilotImage(props) {
+      const pilot = props.pilot;
+      const file = props.kind === 'portrait' ? pilot.assetPortrait : pilot.assetAvatar;
+      const url = '/dsh-eva-unit-01/assets/' + file;
+      const className = 'eva-pilot-img' + (props.className ? ' ' + props.className : '');
+      if (pilot.photo) {
+        return h('span', { className: className + ' eva-pilot-img--photo', 'aria-hidden': true },
+          h('img', { src: url, alt: '' }));
+      }
+      return h('span', {
+        className: className + ' eva-pilot-img--mask',
+        'aria-hidden': true,
+        style: {
+          WebkitMaskImage: 'url(' + url + ')',
+          maskImage: 'url(' + url + ')',
+        },
+      });
+    }
+
     function useClock() {
       const [clock, setClock] = useState(() => new Date());
       useEffect(() => {
@@ -480,7 +500,7 @@ window.__ModuleLoader__.load({
       return h('div', { className: 'eva-scene eva-scene--pilot' },
         h('div', { className: 'eva-pilotbrief' },
           h('span', { className: 'eva-pilotbrief__frame' }),
-          h(Art, { name: pilot.portrait, className: 'eva-pilotbrief__portrait' }),
+          h(PilotImage, { pilot, kind: 'portrait', className: 'eva-pilotbrief__portrait' }),
           h('span', { className: 'eva-pilotbrief__a10' },
             h(Art, { name: 'a10Clip', className: 'eva-pilotbrief__clip' }),
             h('span', null, 'A10 CLIPS · L/R'),
@@ -765,29 +785,78 @@ window.__ModuleLoader__.load({
      * pilot" beat: a portrait, the pilot name, A10 clip status and a start
      * control.  The click is what unlocks WebAudio (browser autoplay policy).
      * ------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------ *
+     * NERV EMERGENCY alert — a recreation of the reference plugin's red
+     * emergency broadcast: tiled hex alarm, NERV serif, motto and clock.
+     * It always plays before the pilot confirmation screen.
+     * ------------------------------------------------------------------ */
+    function BootAlarm(props) {
+      const duration = reduceMotion() ? 1300 : 3000;
+      const [seconds, setSeconds] = useState(0);
+
+      useEffect(() => {
+        const started = Date.now();
+        const tick = setInterval(() => setSeconds(Math.floor((Date.now() - started) / 1000)), 200);
+        const done = setTimeout(() => props.onDone(), duration);
+        const unlock = () => {
+          if (!soundSignal.get()) return;
+          audio.unlock().then((ok) => {
+            if (ok) audio.sfx('alarm');
+          });
+        };
+        window.addEventListener('pointerdown', unlock);
+        return () => {
+          clearInterval(tick);
+          clearTimeout(done);
+          window.removeEventListener('pointerdown', unlock);
+        };
+      }, []);
+
+      const base = 3 * 3600 + 29 * 60 + 58 - seconds;
+      const clock = pad(Math.floor(base / 3600)) + ':' +
+        pad(Math.floor(base / 60) % 60) + ':' + pad(base % 60);
+
+      return h('div', {
+        className: 'eva-alarm',
+        role: 'alertdialog',
+        'aria-label': 'NERV EMERGENCY / 警報',
+      },
+        h('img', {
+          className: 'eva-alarm__bg',
+          src: '/dsh-eva-unit-01/assets/nerv-emergency.svg',
+          alt: '',
+        }),
+        h('span', { className: 'eva-alarm__flash' }),
+        h('span', { className: 'eva-alarm__scan' }),
+        h('div', { className: 'eva-alarm__center' },
+          h('span', { className: 'eva-alarm__eyebrow' }, 'EMERGENCY BROADCAST'),
+          h('span', { className: 'eva-alarm__nerv' }, 'NERV'),
+          h('span', { className: 'eva-alarm__quote' }, 'God’s In His Heaven'),
+          h('span', { className: 'eva-alarm__quote eva-alarm__quote--2' }, 'All’s Right With The World'),
+          h('span', { className: 'eva-alarm__clock' }, clock),
+          h('span', { className: 'eva-alarm__jp' }, '警報 · 発進管制 / STANDBY FOR LAUNCH')),
+        h('span', { className: 'eva-alarm__foot' }, 'MAGI SYSTEM · 03 SOUND ONLY · 初号機'));
+    }
+
     function PilotGate(props) {
       const pilot = usePilot();
-      const [left, setLeft] = useState(reduceMotion() ? 2 : 9);
+      const [picked, setPicked] = useState(false);
       const [sync, setSync] = useState(0);
       const [inserting, setInserting] = useState(false);
       const started = useRef(false);
       const insertTimer = useRef(0);
 
       const begin = (withSound) => {
-        if (started.current) return;
+        if (started.current || !picked) return;
         started.current = true;
         props.onStart(withSound);
       };
 
       const choose = (event, key) => {
         event.stopPropagation();
+        setPicked(true);
         choosePilot(key);
       };
-
-      const mask = (file) => ({
-        WebkitMaskImage: 'url(/dsh-eva-unit-01/assets/' + file + ')',
-        maskImage: 'url(/dsh-eva-unit-01/assets/' + file + ')',
-      });
 
       // Entry-plug sync charge: restarts whenever the pilot changes.
       useEffect(() => {
@@ -809,34 +878,10 @@ window.__ModuleLoader__.load({
         return () => clearTimeout(insertTimer.current);
       }, [pilot.key]);
 
-      useEffect(() => {
-        if (reduceMotion()) {
-          const timer = setTimeout(() => begin(false), 1400);
-          return () => clearTimeout(timer);
-        }
-        const timer = setInterval(() => setLeft((value) => Math.max(0, value - 1)), 1000);
-        return () => clearInterval(timer);
-      }, []);
-
-      useEffect(() => {
-        if (left <= 0) begin(false);
-      }, [left]);
-
-      useEffect(() => {
-        const onKey = (event) => {
-          if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            begin(true);
-          }
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-      }, []);
 
       return h('div', {
         className: 'eva-gate',
         role: 'presentation',
-        onClick: () => begin(true),
       },
         h('div', { className: 'eva-gate__bg' }),
         h('div', { className: 'eva-gate__grid' }),
@@ -863,8 +908,8 @@ window.__ModuleLoader__.load({
               h('span', {
                 className: 'eva-gate__plugPilot',
                 'data-inserting': inserting ? '1' : '0',
-                style: mask(pilot.assetPortrait),
-              }),
+              },
+                h(PilotImage, { pilot, kind: 'portrait', className: 'eva-gate__plugPilotImg' })),
               h('span', { className: 'eva-gate__plugTag eva-gate__plugTag--top' }, 'ENTRY PLUG / 挿入栓'),
               h('span', { className: 'eva-gate__plugTag eva-gate__plugTag--bottom' }, 'EVA-' + pilot.unit + ' · ' + pilot.unitJp),
               h('svg', { className: 'eva-gate__ring', viewBox: '0 0 120 120', 'aria-hidden': true },
@@ -889,10 +934,10 @@ window.__ModuleLoader__.load({
                   key: item.key,
                   type: 'button',
                   className: 'eva-gate__pilotBtn',
-                  'data-selected': item.key === pilot.key ? '1' : '0',
+                  'data-selected': picked && item.key === pilot.key ? '1' : '0',
                   onClick: (event) => choose(event, item.key),
                 },
-                  h('span', { className: 'eva-gate__avatar', style: mask(item.assetAvatar) }),
+                  h(PilotImage, { pilot: item, kind: 'avatar', className: 'eva-gate__avatar' }),
                   h('span', { className: 'eva-gate__pilotInfo' },
                     h('b', null, item.name),
                     h('i', null, item.en),
@@ -906,6 +951,8 @@ window.__ModuleLoader__.load({
               h('button', {
                 type: 'button',
                 className: 'eva-gate__start',
+                disabled: !picked,
+                'aria-disabled': !picked,
                 onClick: (event) => {
                   event.stopPropagation();
                   begin(true);
@@ -916,14 +963,16 @@ window.__ModuleLoader__.load({
               h('button', {
                 type: 'button',
                 className: 'eva-gate__muted',
+                disabled: !picked,
+                'aria-disabled': !picked,
                 onClick: (event) => {
                   event.stopPropagation();
                   begin(false);
                 },
               }, '音声なしで起動 / START MUTED'),
-              h('span', { className: 'eva-gate__hint' }, 'カードで驾驶员更换 · クリック / ENTER で音声 ON')))),
+              h('span', { className: 'eva-gate__hint' }, 'カードで驾驶员更换 · 接続開始で手動承認')))),
         h('div', { className: 'eva-gate__foot' },
-          h('span', null, 'AUTO START ' + pad(left)),
+          h('span', null, picked ? 'PILOT CONFIRMED / 承認待ち' : 'SELECT PILOT / 手動承認'),
           h('span', null, 'NERV · EVA-' + pilot.unit + ' · ' + pilot.unitJp),
           h('span', null, 'CYCLE 0001')));
     }
@@ -933,7 +982,7 @@ window.__ModuleLoader__.load({
       if (!caption) return null;
       const pilot = pilotOf(caption.pilot);
       return h('div', { className: 'eva-comm', key: caption.id },
-        h(Art, { name: pilot.avatar, className: 'eva-comm__avatar' }),
+        h(PilotImage, { pilot, kind: 'avatar', className: 'eva-comm__avatar' }),
         h('span', { className: 'eva-comm__body' },
           h('span', { className: 'eva-comm__who' }, 'パイロット · ' + pilot.name),
           h('span', { className: 'eva-comm__jp' }, caption.jp),
@@ -987,8 +1036,9 @@ window.__ModuleLoader__.load({
       const sound = useSignal(soundSignal);
       const caption = useSignal(captionSignal);
       const pilot = usePilot();
-      const [gate, setGate] = useState(() => !hasGatePassed());
-      const [run, setRun] = useState(() => (hasGatePassed() ? 0 : -1));
+      const [alarm, setAlarm] = useState(true);
+      const [gate, setGate] = useState(true);
+      const [run, setRun] = useState(-1);
       const [finished, setFinished] = useState(-1);
       const [burstRun, setBurstRun] = useState(0);
       const [burstDone, setBursted] = useState(0);
@@ -997,7 +1047,6 @@ window.__ModuleLoader__.load({
       soundRef.current = sound;
 
       const startFromGate = (withSound) => {
-        markGatePassed();
         if (withSound && soundRef.current) {
           audio.unlock().then((ok) => {
             if (ok) {
@@ -1012,6 +1061,7 @@ window.__ModuleLoader__.load({
       };
 
       useEffect(() => launchSignal.subscribe(() => {
+        setAlarm(false);
         setGate(false);
         if (soundRef.current) audio.unlock();
         setRun((current) => (current < 0 ? 0 : current + 1));
@@ -1119,7 +1169,8 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scan' }),
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' })),
-        gate ? h(PilotGate, { onStart: startFromGate }) : null,
+        alarm ? h(BootAlarm, { onDone: () => setAlarm(false) })
+          : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing
           ? h(LaunchSequence, {
               key: run,
@@ -1345,7 +1396,7 @@ window.__ModuleLoader__.load({
       }, []);
       return h('div', { className: 'eva-rail', 'aria-hidden': true },
         h('span', { className: 'eva-rail__pilot' },
-          h(Art, { name: pilot.avatar, className: 'eva-rail__pilotAvatar' }),
+          h(PilotImage, { pilot, kind: 'avatar', className: 'eva-rail__pilotAvatar' }),
           h('b', null, pilot.name),
           h('i', { className: 'eva-rail__heart' }, '♥'),
           h('span', { className: 'eva-rail__pilotSync' },
@@ -1384,7 +1435,7 @@ window.__ModuleLoader__.load({
             berserk ? '暴走 / BERSERK' : '発進管制 / LAUNCH CONTROL'),
           h('span', { className: 'eva-status__sep' }),
           h('span', { className: 'eva-status__pilot' },
-            h(Art, { name: pilot.avatar, className: 'eva-status__pilotAvatar' }),
+            h(PilotImage, { pilot, kind: 'avatar', className: 'eva-status__pilotAvatar' }),
             h('b', null, 'PILOT ' + pilot.no),
             h('i', { className: 'eva-status__heart' }, '♥')),
           h('span', { className: 'eva-status__metric' }, 'SYNC',

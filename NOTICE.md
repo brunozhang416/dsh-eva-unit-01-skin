@@ -11,6 +11,7 @@ at the project owner's explicit request, for the pilot-selection screen:
 - `assets/portrait-asuka.png` — original file `assets/images/asuka-portrait-lineart.png`
 - `assets/portrait-rei.png` — original file `assets/images/rei-portrait-lineart.png`
 - `assets/entry-plug.svg` — original file `assets/svg/eva-entry-plug.svg`
+- `assets/nerv-emergency.svg` — original file `assets/svg/nerv-emergency.svg` (central NERV/motto/clock text removed so the UI can render live text)
 
 That project's `LICENSE` covers code under MIT but explicitly excludes third-party
 media assets, and its `NOTICE.md`/`docs/assets.md` record the provenance of the
@@ -20,12 +21,11 @@ non-commercial fan project. The entry plug SVG was additionally repaired to be
 valid standalone XML (a valueless `data-boot-unit` attribute) and given an
 internal `<style>` fallback for its CSS variables.
 
-`assets/avatar-shinji.png` and `assets/portrait-shinji.png` are derived from this
-project's own original vector artwork (`art/pilot-avatar.svg`,
-`art/pilot-casual.svg`) through an edge-detection line-art pass. Their design
-cues (white/blue plugsuit, red collar, A10 clips, headphones, SDAT) come from
-reference images supplied by the project owner, but no original illustration is
-traced or embedded.
+`assets/avatar-shinji.png` and `assets/portrait-shinji.png` are crops of an
+illustration supplied directly by the project owner for this personal fan
+project (the seated Shinji in a room with headphones and SDAT). Copyright remains
+with the supplier; they are included at the owner's explicit request and are not
+covered by this repository's MIT license.
 
 ## Music, voice and the rest
 

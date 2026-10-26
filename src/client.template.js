@@ -134,7 +134,7 @@ window.__ModuleLoader__.load({
 
     /* __EVA_AUDIO__ */
 
-    const audio = createEvaAudio();
+    let audio = createEvaAudio();
 
     // ------------------------------------------------------------------
     // Pilot roster. Each pilot owns a unit page (01 / 02 / 03), a palette,
@@ -913,7 +913,7 @@ window.__ModuleLoader__.load({
                 },
               },
                 h('span', null, '▶ 起動'),
-                h('em', null, 'CLICK TO START · 音声 ON'))),
+                h('em', null, 'CLICK TO START · 音声 ' + (readSound() ? 'ON' : 'OFF')))),
         h('span', { className: 'eva-angel__scan' }),
         h('span', { className: 'eva-angel__flash' }),
         h('span', { className: 'eva-angel__frame' }));
@@ -1744,11 +1744,26 @@ window.__ModuleLoader__.load({
         // AudioContext is only created after a user gesture (gate / replay /
         // sound button), never during page start.
         ctx.effect(() => {
-          audio.setEnabled(readSound());
+          // HMR can re-apply the plugin without re-evaluating this module.
+          // Recreate the engine so a previous apply's dispose() cannot leave
+          // a dead instance behind.
+          const engine = createEvaAudio();
+          audio = engine;
+          engine.setEnabled(soundSignal.get());
           return () => {
             clearTimeout(captionTimer);
-            audio.dispose();
+            engine.dispose();
           };
+        });
+
+        // If the page is already interactive (or HMR replaced the engine),
+        // the next pointer gesture re-unlocks audio even outside the intro.
+        ctx.effect(() => {
+          const unlock = () => {
+            if (soundSignal.get()) audio.unlock();
+          };
+          window.addEventListener('pointerdown', unlock, { once: true });
+          return () => window.removeEventListener('pointerdown', unlock);
         });
 
         const locale = ctx.get('locale');

@@ -1458,10 +1458,10 @@ window.__ModuleLoader__.load({
       }, []);
       if (!place.measured || !open) return null;
 
-      const maxTop = () => Math.max(48, window.innerHeight - ((panelRef.current && panelRef.current.offsetHeight) || 420) - 14);
-      const clampLeft = (value) => Math.min(Math.max(value, place.minLeft), Math.max(place.minLeft, place.maxLeft));
+      const maxTop = () => Math.max(8, window.innerHeight - ((panelRef.current && panelRef.current.offsetHeight) || 420) - 42);
+      const clampLeft = (value) => Math.max(6, Math.min(value, window.innerWidth - place.width - 6));
       const position = manual
-        ? { left: clampLeft(manual.left), top: Math.min(Math.max(manual.top, 48), maxTop()) }
+        ? { left: clampLeft(manual.left), top: Math.min(Math.max(manual.top, 8), maxTop()) }
         : { left: place.left, top: 58 };
       const toggleCollapsed = () => {
         setCollapsed((value) => {
@@ -1491,7 +1491,7 @@ window.__ModuleLoader__.load({
         event.preventDefault();
         const next = {
           left: clampLeft(drag.left + event.clientX - drag.x),
-          top: Math.min(Math.max(drag.top + event.clientY - drag.y, 48), maxTop()),
+          top: Math.min(Math.max(drag.top + event.clientY - drag.y, 8), maxTop()),
         };
         setManual(next);
       };

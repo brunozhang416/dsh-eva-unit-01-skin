@@ -19,7 +19,7 @@ window.__ModuleLoader__.load({
     const SOUND_KEY = 'eva01.sound';
     const GATE_KEY = 'eva01.gate';
     const PILOT_KEY = 'eva01.pilot';
-    const ASSET_VERSION = '1.5.1';
+    const ASSET_VERSION = '1.5.2';
 
     const assetUrl = (file) => '/dsh-eva-unit-01/assets/' + file + '?v=' + ASSET_VERSION;
 

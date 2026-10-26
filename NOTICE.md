@@ -26,7 +26,7 @@ and are not covered by this repository's MIT license.
 `assets/avatar-rei.png` and `assets/portrait-rei.png` are crops / transparent
 line-art conversions of images supplied directly by the project owner for this
 personal fan project (Shinji in his room with headphones/SDAT; Asuka in her red
-plugsuit; Rei as a blue line-art sketch). Copyright remains with the supplier;
+plugsuit; Rei in her plugsuit inside the entry plug). Copyright remains with the supplier;
 they are included at the owner's explicit request and are not covered by this
 repository's MIT license.
 

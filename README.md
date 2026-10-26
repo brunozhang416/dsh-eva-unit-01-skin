@@ -3,7 +3,7 @@
 把 **DeepSeek Harness Web GUI** 改成 EVA 启动控制台的皮肤插件（Cordis bundle，Host 提供余额/素材路由，Client 负责全部界面）。
 
 - 包名：`dsh-eva-unit-01-skin`
-- 当前版本：**v1.5.1**
+- 当前版本：**v1.5.2**
 - 形态：Client 侧皮肤插件 + 只读 Host 路由（余额、驾驶员素材）
 - 适配：Harness Desktop / Web 客户端，深色与浅色两套宿主配色
 
@@ -167,7 +167,7 @@ node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进
 | `assets/berserk-01.png` / `berserk-02.png` | 初号机/二号机暴走立绘（抠图，所有者提供） |
 | `assets/avatar-shinji.png` / `portrait-shinji.png` | 项目所有者提供的碇真嗣插画裁切 |
 | `assets/avatar-asuka.png` / `portrait-asuka.png` | 项目所有者提供的明日香插画裁切 |
-| `assets/avatar-rei.png` / `portrait-rei.png` | 项目所有者提供的绫波丽线稿裁切/透明化 |
+| `assets/avatar-rei.png` / `portrait-rei.png` | 项目所有者提供的绫波丽插入栓插画裁切 |
 | `client.js` | 构建产物 |
 
 ## 兼容性与边界
@@ -180,8 +180,8 @@ node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进
 ## 素材与授权
 
 - 代码与原创矢量/音频/台词：MIT（见 `LICENSE`）。
-- **插入栓 SVG** 来自 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)，按其仓库说明其媒体素材不在 MIT 覆盖范围内；本仓库按用户要求引用并保留署名，权利归原作者。插入栓 SVG 做了 XML 合法性与内联样式修复。碇真嗣、明日香、绫波丽图像均使用项目所有者提供的插画/线稿素材裁切，版权归提供者。见 [`NOTICE.md`](NOTICE.md)。
-- 碇真嗣、明日香、绫波丽图像均使用项目所有者提供的插画/线稿素材裁切与透明化处理，不复制官方原画。
+- **插入栓 SVG** 来自 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)，按其仓库说明其媒体素材不在 MIT 覆盖范围内；本仓库按用户要求引用并保留署名，权利归原作者。插入栓 SVG 做了 XML 合法性与内联样式修复。碇真嗣、明日香、碇真嗣、明日香、绫波丽图像均使用项目所有者提供的插画素材裁切，版权归提供者。见 [`NOTICE.md`](NOTICE.md)。
+- 碇真嗣、明日香、碇真嗣、明日香、绫波丽图像均使用项目所有者提供的插画素材裁切与透明化处理，不复制官方原画。
 - 不包含官方动画音轨、声优录音或官方美术素材；角色名与机体名为致敬性引用，本项目为非商业粉丝作品。
 
 ## License

@@ -6148,17 +6148,6 @@ body:has([data-collapsed="true"]) .eva-canopy { left: 56px; }
   box-shadow: 0 0 14px var(--eva-glow);
 }
 .eva-pilot-toggle[data-open="1"] .eva-pilot-toggle__glyph { color: var(--eva-accent); }
-body:has([data-collapsed="true"]) .eva-pilot-toggle {
-  left: 64px;
-  top: 58px;
-  width: 24px;
-  padding: 0;
-  justify-content: center;
-}
-body:has([data-collapsed="true"]) .eva-pilot-toggle__label,
-body:has([data-collapsed="true"]) .eva-pilot-toggle__en {
-  display: none;
-}
 .eva-cp[data-overlay="1"] {
   z-index: 35;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.62), 0 0 30px rgba(157, 255, 74, 0.1);

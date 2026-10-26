@@ -1349,20 +1349,90 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /* Text control in the sidebar brand row; opens/closes the merged panel. */
+    /* Text control in the sidebar brand row; opens/closes the merged panel.
+     * Its placement is measured from the brand mark/name, and it folds away
+     * together with the left sidebar instead of floating on a collapsed rail. */
     function PilotToggle() {
       const open = useSignal(cockpitOpenSignal);
+      const [place, setPlace] = useState({ visible: false, left: 164, top: 56 });
+      useEffect(() => {
+        let alive = true;
+        let raf = 0;
+        let last = '';
+        const measure = () => {
+          raf = 0;
+          if (!alive) return;
+          try {
+            const sidebar = document.querySelector('[class*="sidebarCol"]');
+            const mark = document.querySelector('.eva-brandmark');
+            const name = document.querySelector('.eva-brandname');
+            if (!sidebar || !mark) return;
+            const sidebarRect = sidebar.getBoundingClientRect();
+            const markRect = mark.getBoundingClientRect();
+            const nameRect = name ? name.getBoundingClientRect() : markRect;
+            const width = 84;
+            const top = markRect.top + markRect.height / 2 - 11;
+            const left = Math.max(nameRect.right + 8, markRect.right + 10);
+            const maxRight = sidebarRect.right - 28;
+            const visible = sidebarRect.width >= 120 && left + width <= maxRight;
+            const safeLeft = visible ? Math.min(left, maxRight - width) : left;
+            const key = (visible ? 1 : 0) + ':' + Math.round(safeLeft) + ':' + Math.round(top);
+            if (key === last) return;
+            last = key;
+            setPlace({ visible, left: safeLeft, top });
+          } catch (error) {
+            /* host not mounted yet */
+          }
+        };
+        const schedule = () => { if (!raf) raf = requestAnimationFrame(measure); };
+        const targets = [
+          document.querySelector('[class*="sidebarCol"]'),
+          document.querySelector('.eva-brandmark'),
+          document.querySelector('.eva-brandname'),
+        ].filter(Boolean);
+        let observer = null;
+        try {
+          observer = new ResizeObserver(schedule);
+          targets.forEach((target) => observer.observe(target));
+        } catch (error) {
+          observer = null;
+        }
+        let mutations = null;
+        try {
+          mutations = new MutationObserver(schedule);
+          mutations.observe(document.body, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            attributeFilter: ['class', 'style', 'data-collapsed'],
+          });
+        } catch (error) {
+          mutations = null;
+        }
+        window.addEventListener('resize', schedule);
+        const timer = setInterval(schedule, 800);
+        schedule();
+        return () => {
+          alive = false;
+          if (raf) cancelAnimationFrame(raf);
+          if (observer) observer.disconnect();
+          if (mutations) mutations.disconnect();
+          window.removeEventListener('resize', schedule);
+          clearInterval(timer);
+        };
+      }, []);
+      if (!place.visible) return null;
       return h('button', {
         type: 'button',
         className: 'eva-pilot-toggle',
+        style: { left: place.left + 'px', top: place.top + 'px' },
         'data-open': open ? '1' : '0',
         'aria-expanded': open ? 'true' : 'false',
         title: '切换驾驶员 / PILOT PANEL',
         onClick: () => cockpitOpenSignal.set(!open),
       },
         h('span', { className: 'eva-pilot-toggle__glyph', 'aria-hidden': true }, '⇄'),
-        h('span', { className: 'eva-pilot-toggle__label' }, '切换驾驶员'),
-        h('span', { className: 'eva-pilot-toggle__en' }, 'PILOT'));
+        h('span', { className: 'eva-pilot-toggle__label' }, '切换驾驶员'));
     }
 
     /* One merged cockpit panel: pilot on top, EVA POWER/status below, pilot

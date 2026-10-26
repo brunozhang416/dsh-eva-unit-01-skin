@@ -1207,6 +1207,23 @@ window.__ModuleLoader__.load({
           h('path', { d: 'M20 15H8l3 3M8 15l-3-3 3-3' })));
     }
 
+    /* Thin canopy strip under the host header. */
+    function CockpitChrome() {
+      const power = usePower();
+      return h('div', {
+        className: 'eva-canopy',
+        'data-low': power.low ? '1' : '0',
+        'aria-hidden': true,
+      },
+        h('span', { className: 'eva-canopy__hazard' }),
+        h('span', null, 'LCL / SYNC MONITOR'),
+        h('span', null, 'MAGI ONLINE'),
+        h('span', { className: 'eva-canopy__grow' }),
+        h('span', null, 'ENTRY PLUG LOCKED'),
+        h('span', null, 'TOKYO-3 / NERV'),
+        h('span', { className: 'eva-canopy__hazard' }));
+    }
+
     /* Pilot dossier: the left-hand cockpit console from the approved concept. */
     function PilotDossier() {
       const pilot = usePilot();
@@ -1528,7 +1545,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' }),
           berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
-        !alarm && !gate && !playing ? h(React.Fragment, null, h(PilotDossier), h(PowerPanel), h(PilotSwitchButton)) : null,
+        !alarm && !gate && !playing ? h(React.Fragment, null, h(CockpitChrome), h(PilotDossier), h(PowerPanel), h(PilotSwitchButton)) : null,
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing

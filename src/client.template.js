@@ -986,9 +986,11 @@ window.__ModuleLoader__.load({
     function PilotGate(props) {
       const pilot = usePilot();
       const [picked, setPicked] = useState(false);
+      const [changeMode, setChangeMode] = useState(false);
       const [sync, setSync] = useState(0);
       const [ready, setReady] = useState(false);
       const started = useRef(false);
+      const selectedMode = Boolean(props.preselect) && !changeMode;
 
       // Returning from the cockpit panel: preselect the clicked pilot and let
       // the selected-pilot loading display play before boarding. This is not
@@ -1084,25 +1086,44 @@ window.__ModuleLoader__.load({
             h('span', { className: 'eva-gate__title' }, pilot.unitJp + ' 起動'),
             h('span', { className: 'eva-gate__sub' }, 'EVA-' + pilot.unit + ' // INSERT ENTRY PLUG'),
             h('span', { className: 'eva-gate__line' }),
-            h('div', { className: 'eva-gate__pilots' },
-              Object.values(PILOTS).map((item) =>
-                h('button', {
-                  key: item.key,
-                  type: 'button',
-                  className: 'eva-gate__pilotBtn',
-                  'data-selected': picked && item.key === pilot.key ? '1' : '0',
-                  onClick: (event) => choose(event, item.key),
-                },
-                  h(PilotImage, { pilot: item, kind: 'avatar', className: 'eva-gate__avatar' }),
-                  h('span', { className: 'eva-gate__pilotInfo' },
-                    h('b', null, item.name),
-                    h('i', null, item.en),
-                    h('em', null, 'UNIT-' + item.unit + ' · PILOT ' + item.no)),
-                  h('span', { className: 'eva-gate__pilotLed' })))),
-            h('div', { className: 'eva-gate__selectMeta' },
-              h('b', null, pilot.name),
-              h('span', null, pilot.en + ' · PILOT ' + pilot.no),
-              h('i', null, 'A10 · LCL · ' + pilot.unitEn + ' · VOICE ' + pilot.voiceLabel)),
+            selectedMode
+              ? h('div', { className: 'eva-gate__selected' },
+                  h('div', { className: 'eva-gate__selectedPhoto' },
+                    h(PilotImage, { pilot, kind: 'portrait', className: 'eva-gate__selectedPortrait' })),
+                  h('div', { className: 'eva-gate__selectedInfo' },
+                    h('span', { className: 'eva-gate__eyebrow' }, 'PILOT SELECTED / パイロット選択済み'),
+                    h('b', { className: 'eva-gate__selectedName' }, pilot.name),
+                    h('span', { className: 'eva-gate__selectedEn' }, pilot.en + ' · PILOT ' + pilot.no),
+                    h('span', { className: 'eva-gate__selectedMeta' },
+                      'A10 · LCL 0.00 · ' + pilot.unitEn + ' · VOICE ' + pilot.voiceLabel),
+                    h('span', { className: 'eva-gate__selectedSync' }, sync + '% / SYNC'),
+                    h('button', {
+                      type: 'button',
+                      className: 'eva-gate__change',
+                      onClick: (event) => {
+                        event.stopPropagation();
+                        setChangeMode(true);
+                      },
+                    }, '更换驾驶员 / CHANGE')))
+              : [h('div', { className: 'eva-gate__pilots' },
+                  Object.values(PILOTS).map((item) =>
+                    h('button', {
+                      key: item.key,
+                      type: 'button',
+                      className: 'eva-gate__pilotBtn',
+                      'data-selected': picked && item.key === pilot.key ? '1' : '0',
+                      onClick: (event) => choose(event, item.key),
+                    },
+                      h(PilotImage, { pilot: item, kind: 'avatar', className: 'eva-gate__avatar' }),
+                      h('span', { className: 'eva-gate__pilotInfo' },
+                        h('b', null, item.name),
+                        h('i', null, item.en),
+                        h('em', null, 'UNIT-' + item.unit + ' · PILOT ' + item.no)),
+                      h('span', { className: 'eva-gate__pilotLed' })))),
+                h('div', { className: 'eva-gate__selectMeta' },
+                  h('b', null, pilot.name),
+                  h('span', null, pilot.en + ' · PILOT ' + pilot.no),
+                  h('i', null, 'A10 · LCL · ' + pilot.unitEn + ' · VOICE ' + pilot.voiceLabel))],
             h('div', { className: 'eva-gate__actions' },
               h('button', {
                 type: 'button',

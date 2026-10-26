@@ -456,6 +456,39 @@ function createEvaAudio() {
     playTone(state.sfxBus, at + 0.02, { type: 'triangle', freq: 165, peak: 0.035, attack: 0.08, decay: 1.0, filter: 'lowpass', filterFreq: 800, q: 0.7 });
     playNoise(state.sfxBus, at, { filter: 'lowpass', from: 600, to: 200, dur: 0.9, attack: 0.1, peak: 0.02, q: 0.8 });
   }
+
+
+  /* ---------------------------- SYSTEM CUE ---------------------------- */
+  /* One armoured-HUD voice for all pilots: short digital chirp sequences,
+   * a servo noise tail and a low mechanical thump. No character TTS. */
+  var SYSTEM_BASE = {
+    gate: 520, boot: 440, pilot: 600, plug: 520, neural: 700, sync: 820,
+    activate: 960, launch: 1040, welcome: 660, berserk_on: 220, berserk_off: 420,
+  };
+  function systemCue(name) {
+    if (!ready()) return;
+    try {
+      var at = now() + 0.02;
+      var base = SYSTEM_BASE[name] || 640;
+      var steps = name === 'berserk_on' ? [-12, -7, -2, -14] : name === 'launch' ? [0, 7, 12, 19] : [0, 4, 7, 4];
+      for (var i = 0; i < steps.length; i += 1) {
+        var freq = base * Math.pow(2, steps[i] / 12);
+        playTone(state.sfxBus, at + i * 0.075, {
+          type: 'square', freq: freq, peak: 0.045, attack: 0.003, decay: 0.07,
+          filter: 'lowpass', filterFreq: 2400, q: 0.8,
+        });
+        playTone(state.sfxBus, at + i * 0.075, {
+          type: 'triangle', freq: freq * 0.5, peak: 0.018, attack: 0.003, decay: 0.09,
+          filter: 'lowpass', filterFreq: 900, q: 0.7,
+        });
+      }
+      playNoise(state.sfxBus, at, { filter: 'bandpass', from: 1400, to: 380, dur: 0.22, attack: 0.004, peak: 0.02, q: 1.1 });
+      playTone(state.sfxBus, at + 0.02, {
+        type: 'sine', freq: 74, peak: 0.08, attack: 0.005, decay: 0.22,
+        filter: 'lowpass', filterFreq: 150, q: 0.7,
+      });
+    } catch (error) { /* console must never break */ }
+  }
   var SFX = { beep: sfxBeep, alarm: sfxAlarm, clamp: sfxClamp, lcl: sfxLcl, sync: sfxSync, launch: sfxLaunch, typing: sfxTyping, boot: sfxBoot };
 
   /* -------------------------------- TTS ------------------------------- */
@@ -657,7 +690,7 @@ function createEvaAudio() {
   return {
     supported: true, unlock: unlock, isUnlocked: isUnlocked, setEnabled: setEnabled,
     startBoot: startBoot, setPhase: setPhase, stopBoot: stopBoot, setBerserk: setBerserk,
-    sfx: sfx, speak: speak, setMuted: function (on) { setEnabled(!on); }, dispose: dispose,
+    sfx: sfx, speak: speak, systemCue: systemCue, setMuted: function (on) { setEnabled(!on); }, dispose: dispose,
     startAngel: startAngel, stopAngel: stopAngel,
   };
 }

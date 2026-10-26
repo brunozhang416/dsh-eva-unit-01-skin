@@ -5324,7 +5324,7 @@ body[data-eva-pilot="00"] .eva-gate__bg {
   text-align: left;
   cursor: pointer;
   pointer-events: auto;
-  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  border-radius: 4px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .eva-switch::before {

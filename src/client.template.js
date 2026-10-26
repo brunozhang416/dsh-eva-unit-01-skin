@@ -19,7 +19,7 @@ window.__ModuleLoader__.load({
     const SOUND_KEY = 'eva01.sound';
     const GATE_KEY = 'eva01.gate';
     const PILOT_KEY = 'eva01.pilot';
-    const ASSET_VERSION = '1.3.2';
+    const ASSET_VERSION = '1.4.0';
 
     const assetUrl = (file) => '/dsh-eva-unit-01/assets/' + file + '?v=' + ASSET_VERSION;
 
@@ -156,8 +156,8 @@ window.__ModuleLoader__.load({
         assetAvatar: 'avatar-shinji.png',
         assetPortrait: 'portrait-shinji.png',
         photo: true,
-        voice: { rate: 0.9, pitch: 0.92, volume: 0.95, prefer: ['reed', 'eddy', 'otoya', 'kyoko'] },
-        voiceLabel: 'SOFT',
+        voice: { rate: 0.86, pitch: 1.02, volume: 0.88, prefer: ['eddy', 'reed', 'kyoko'] },
+        voiceLabel: 'BOYISH',
         lines: {
           gate: { jp: 'ゲートの前で、足が止まる', zh: '在闸门前，脚迈不动。' },
           boot: { jp: 'システム、起動した…？', zh: '系统…启动了吗？' },
@@ -220,8 +220,8 @@ window.__ModuleLoader__.load({
         assetAvatar: 'avatar-rei.png',
         assetPortrait: 'portrait-rei.png',
         photo: true,
-        voice: { rate: 0.78, pitch: 0.8, volume: 0.8, prefer: ['kyoko', 'shelley', 'flo'] },
-        voiceLabel: 'MONO',
+        voice: { rate: 0.72, pitch: 0.72, volume: 0.7, prefer: ['shelley', 'flo', 'kyoko'] },
+        voiceLabel: 'COLD',
         lines: {
           gate: { jp: '……指示をください。', zh: '……请下指示。' },
           boot: { jp: 'システム、起動。', zh: '系统，启动。' },
@@ -796,68 +796,111 @@ window.__ModuleLoader__.load({
      * control.  The click is what unlocks WebAudio (browser autoplay policy).
      * ------------------------------------------------------------------ */
     /* ------------------------------------------------------------------ *
-     * NERV EMERGENCY alert — a recreation of the reference plugin's red
-     * emergency broadcast: tiled hex alarm, NERV serif, motto and clock.
-     * It always plays before the pilot confirmation screen.
+     * ANGEL ATTACK — TV-style opening card with an original tense cue.
+     * The first click unlocks audio (browser policy) and starts both the
+     * title animation and the synthesised angel-attack BGM.
      * ------------------------------------------------------------------ */
-    function BootAlarm(props) {
-      const duration = reduceMotion() ? 1300 : 3000;
-      const [seconds, setSeconds] = useState(0);
+    function AngelIntro(props) {
+      const [started, setStarted] = useState(false);
+      const [elapsed, setElapsed] = useState(0);
+
+      const start = () => {
+        if (started) return;
+        setStarted(true);
+        if (soundSignal.get()) {
+          audio.unlock().then((ok) => {
+            if (ok) audio.startAngel();
+          });
+        }
+      };
 
       useEffect(() => {
-        const started = Date.now();
-        const tick = setInterval(() => setSeconds(Math.floor((Date.now() - started) / 1000)), 200);
-        const done = setTimeout(() => props.onDone(), duration);
-        const unlock = () => {
-          if (!soundSignal.get()) return;
-          audio.unlock().then((ok) => {
-            if (ok) audio.sfx('alarm');
-          });
-        };
-        window.addEventListener('pointerdown', unlock);
+        if (!started) return undefined;
+        const duration = reduceMotion() ? 1800 : 5200;
+        const from = Date.now();
+        const tick = setInterval(() => setElapsed(Date.now() - from), 100);
+        const done = setTimeout(() => {
+          audio.stopAngel();
+          props.onDone();
+        }, duration);
         return () => {
           clearInterval(tick);
           clearTimeout(done);
-          window.removeEventListener('pointerdown', unlock);
+          audio.stopAngel();
         };
-      }, []);
+      }, [started]);
 
-      const base = 3 * 3600 + 29 * 60 + 58 - seconds;
-      const clock = pad(Math.floor(base / 3600)) + ':' +
-        pad(Math.floor(base / 60) % 60) + ':' + pad(base % 60);
+      const seconds = 5 * 60 + 31 + Math.floor(elapsed / 1000);
+      const time = '02:' + pad(Math.floor(seconds / 60) % 60) + ':' + pad(seconds % 60);
 
       return h('div', {
-        className: 'eva-alarm',
-        role: 'alertdialog',
-        'aria-label': 'NERV EMERGENCY / 警報',
+        className: 'eva-angel',
+        'data-started': started ? '1' : '0',
+        role: 'dialog',
+        'aria-label': 'ANGEL ATTACK / 使徒、襲来',
       },
-        h('img', {
-          className: 'eva-alarm__bg',
-          src: assetUrl('nerv-emergency.svg'),
-          alt: '',
-        }),
-        h('span', { className: 'eva-alarm__flash' }),
-        h('span', { className: 'eva-alarm__scan' }),
-        h('div', { className: 'eva-alarm__center' },
-          h('span', { className: 'eva-alarm__eyebrow' }, 'EMERGENCY BROADCAST'),
-          h('span', { className: 'eva-alarm__nerv' }, 'NERV'),
-          h('span', { className: 'eva-alarm__quote' }, 'God’s In His Heaven'),
-          h('span', { className: 'eva-alarm__quote eva-alarm__quote--2' }, 'All’s Right With The World'),
-          h('span', { className: 'eva-alarm__clock' }, clock),
-          h('span', { className: 'eva-alarm__jp' }, '警報 · 発進管制 / STANDBY FOR LAUNCH')),
-        h('span', { className: 'eva-alarm__foot' }, 'MAGI SYSTEM · 03 SOUND ONLY · 初号機'));
+        h('span', { className: 'eva-angel__grain' }),
+        h('span', { className: 'eva-angel__entity', 'aria-hidden': true },
+          h('svg', { viewBox: '0 0 200 340', fill: 'none' },
+            h('path', {
+              d: 'M100 16 132 50 122 98 100 114 78 98 68 50Z',
+              fill: '#ded8ea', opacity: '0.9',
+            }),
+            h('path', { d: 'M76 66 124 66M100 40v54', stroke: '#ff2d2d', 'stroke-width': '2' }),
+            h('path', {
+              d: 'M92 114h16l12 88-10 122h-20l-10-122z',
+              fill: '#b9b2c9', opacity: '0.8',
+            }),
+            h('path', { d: 'M86 122 52 196 64 210 96 160Z', fill: '#9a92ab', opacity: '0.7' }),
+            h('path', { d: 'M114 122 148 196 136 210 104 160Z', fill: '#9a92ab', opacity: '0.7' }),
+            h('circle', { cx: '100', cy: '154', r: '9', fill: '#ff1a1a' }),
+            h('path', { d: 'M78 292l22 18 22-18', stroke: '#ded8ea', 'stroke-width': '2', opacity: '0.5' })),
+        ),
+        h('span', { className: 'eva-angel__seismic', 'aria-hidden': true },
+          h('svg', { viewBox: '0 0 1200 120', preserveAspectRatio: 'none' },
+            h('path', {
+              d: 'M0 60h170l22-34 20 68 24-56 18 22h150l26-40 20 76 22-60 18 24h180l24-38 22 72 24-58 16 24h160l24-44 20 72 22-52 18 24h150',
+              fill: 'none', stroke: '#ff2d2d', 'stroke-width': '2',
+            }))),
+        h('div', { className: 'eva-angel__tv' },
+          h('span', { className: 'eva-angel__bug' }, 'NERV'),
+          h('span', { className: 'eva-angel__channel' }, 'TOKYO-3 / 緊急放送'),
+          h('span', { className: 'eva-angel__time' }, time),
+          h('i', { className: 'eva-angel__rec' })),
+        h('div', { className: 'eva-angel__card' },
+          h('span', { className: 'eva-angel__eyebrow' }, 'ANGEL ATTACK'),
+          h('span', { className: 'eva-angel__jp' }, '使徒、襲来'),
+          h('span', { className: 'eva-angel__en' }, 'ANGEL ATTACK'),
+          h('span', { className: 'eva-angel__meta' }, '第3新東京市 · TOKYO-3'),
+          h('span', { className: 'eva-angel__meta eva-angel__meta--2' }, '特務機関 NERV · 第一種戦闘配置'),
+          started
+            ? h('span', { className: 'eva-angel__status' }, 'ALERT LEVEL 1 · ORIGINAL CUE')
+            : h('button', {
+                type: 'button',
+                className: 'eva-angel__start',
+                onClick: (event) => {
+                  event.stopPropagation();
+                  start();
+                },
+              },
+                h('span', null, '▶ 起動'),
+                h('em', null, 'CLICK TO START · 音声 ON'))),
+        h('span', { className: 'eva-angel__scan' }),
+        h('span', { className: 'eva-angel__flash' }),
+        h('span', { className: 'eva-angel__frame' }));
     }
 
     function PilotGate(props) {
       const pilot = usePilot();
       const [picked, setPicked] = useState(false);
       const [sync, setSync] = useState(0);
+      const [ready, setReady] = useState(false);
       const [inserting, setInserting] = useState(false);
       const started = useRef(false);
       const insertTimer = useRef(0);
 
       const begin = (withSound) => {
-        if (started.current || !picked) return;
+        if (started.current || !picked || !ready) return;
         started.current = true;
         props.onStart(withSound);
       };
@@ -868,25 +911,34 @@ window.__ModuleLoader__.load({
         choosePilot(key);
       };
 
-      // Entry-plug sync charge: restarts whenever the pilot changes.
+      // The entry plug stays empty until a pilot is chosen. Selecting a card
+      // starts the insertion + sync loading animation; the confirm buttons
+      // only unlock at 100%.
       useEffect(() => {
+        if (!picked) {
+          setSync(0);
+          setInserting(false);
+          setReady(false);
+          return undefined;
+        }
+        setInserting(false);
+        setReady(false);
+        const from = typeof performance !== 'undefined' ? performance.now() : Date.now();
         let raf = 0;
-        const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
         const tick = (now) => {
-          const progress = Math.min(1, (now - start) / 1250);
+          const progress = Math.min(1, (now - from) / 1400);
           setSync(Math.round(progress * 100));
           if (progress < 1) raf = requestAnimationFrame(tick);
+          else setReady(true);
         };
-        raf = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(raf);
-      }, [pilot.key]);
-
-      useEffect(() => {
-        setInserting(false);
         clearTimeout(insertTimer.current);
         insertTimer.current = setTimeout(() => setInserting(true), 70);
-        return () => clearTimeout(insertTimer.current);
-      }, [pilot.key]);
+        raf = requestAnimationFrame(tick);
+        return () => {
+          cancelAnimationFrame(raf);
+          clearTimeout(insertTimer.current);
+        };
+      }, [picked, pilot.key]);
 
 
       return h('div', {
@@ -915,24 +967,29 @@ window.__ModuleLoader__.load({
                 alt: '',
               }),
               h('span', { className: 'eva-gate__plugGlow' }),
-              h('span', {
-                className: 'eva-gate__plugPilot',
-                'data-inserting': inserting ? '1' : '0',
-              },
-                h(PilotImage, { pilot, kind: 'portrait', className: 'eva-gate__plugPilotImg' })),
+              picked
+                ? h('span', {
+                    className: 'eva-gate__plugPilot',
+                    'data-inserting': inserting ? '1' : '0',
+                  },
+                    h(PilotImage, { pilot, kind: 'portrait', className: 'eva-gate__plugPilotImg' }))
+                : null,
               h('span', { className: 'eva-gate__plugTag eva-gate__plugTag--top' }, 'ENTRY PLUG / 挿入栓'),
               h('span', { className: 'eva-gate__plugTag eva-gate__plugTag--bottom' }, 'EVA-' + pilot.unit + ' · ' + pilot.unitJp),
-              h('svg', { className: 'eva-gate__ring', viewBox: '0 0 120 120', 'aria-hidden': true },
-                h('circle', { className: 'eva-gate__ringTrack', cx: 60, cy: 60, r: 52 }),
-                h('circle', {
-                  className: 'eva-gate__ringFill',
-                  cx: 60,
-                  cy: 60,
-                  r: 52,
-                  style: { '--sync': (sync / 100).toFixed(3) },
-                })),
-              h('span', { className: 'eva-gate__sync' }, sync + '%'),
-              h('span', { className: 'eva-gate__syncLabel' }, 'SYNC / 接続'))),
+              picked
+                ? h(React.Fragment, null,
+                    h('svg', { className: 'eva-gate__ring', viewBox: '0 0 120 120', 'aria-hidden': true },
+                      h('circle', { className: 'eva-gate__ringTrack', cx: 60, cy: 60, r: 52 }),
+                      h('circle', {
+                        className: 'eva-gate__ringFill',
+                        cx: 60,
+                        cy: 60,
+                        r: 52,
+                        style: { '--sync': (sync / 100).toFixed(3) },
+                      })),
+                    h('span', { className: 'eva-gate__sync' }, sync + '%'),
+                    h('span', { className: 'eva-gate__syncLabel' }, 'SYNC / 接続'))
+                : null)),
           h('div', { className: 'eva-gate__console' },
             h('span', { className: 'eva-gate__eyebrow' }, 'パイロット認証 / PILOT AUTHENTICATION'),
             h('span', { className: 'eva-gate__title' }, pilot.unitJp + ' 起動'),
@@ -961,8 +1018,8 @@ window.__ModuleLoader__.load({
               h('button', {
                 type: 'button',
                 className: 'eva-gate__start',
-                disabled: !picked,
-                'aria-disabled': !picked,
+                disabled: !picked || !ready,
+                'aria-disabled': !picked || !ready,
                 onClick: (event) => {
                   event.stopPropagation();
                   begin(true);
@@ -973,16 +1030,16 @@ window.__ModuleLoader__.load({
               h('button', {
                 type: 'button',
                 className: 'eva-gate__muted',
-                disabled: !picked,
-                'aria-disabled': !picked,
+                disabled: !picked || !ready,
+                'aria-disabled': !picked || !ready,
                 onClick: (event) => {
                   event.stopPropagation();
                   begin(false);
                 },
               }, '音声なしで起動 / START MUTED'),
-              h('span', { className: 'eva-gate__hint' }, 'カードで驾驶员更换 · 接続開始で手動承認')))),
+              h('span', { className: 'eva-gate__hint' }, 'カードで驾驶员更换 · 装填完了後に接続開始')))),
         h('div', { className: 'eva-gate__foot' },
-          h('span', null, picked ? 'PILOT CONFIRMED / 承認待ち' : 'SELECT PILOT / 手動承認'),
+          h('span', null, !picked ? 'SELECT PILOT / 手動承認' : ready ? 'PILOT CONFIRMED / 承認待ち' : 'LOADING / 挿入栓装填中…'),
           h('span', null, 'NERV · EVA-' + pilot.unit + ' · ' + pilot.unitJp),
           h('span', null, 'CYCLE 0001')));
     }
@@ -1179,7 +1236,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scan' }),
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' })),
-        alarm ? h(BootAlarm, { onDone: () => setAlarm(false) })
+        alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing
           ? h(LaunchSequence, {

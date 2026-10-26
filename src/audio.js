@@ -35,6 +35,7 @@ function createEvaAudio() {
     bellBus: null, bellDelay: null, bellFeedback: null, bellTone: null, bellWet: null,
     shimmerGain: null, shimmerSource: null, rumbleGain: null, rumbleSource: null,
     berserkBus: null, berserkPulseIn: null, berserkSirenBus: null, berserkSirenFilter: null,
+    angelBus: null, angelTimer: 0, angelNext: 0, angelBeat: 0, wantAngel: false,
     speech: { queue: [], active: false, timer: 0, task: null, voice: null },
   };
   /* Original 4-bar progression, one chord per bar:
@@ -150,6 +151,7 @@ function createEvaAudio() {
     state.limiter.attack.value = 0.003; state.limiter.release.value = 0.3;
     state.master.connect(state.shaper); state.shaper.connect(state.limiter); state.limiter.connect(ctx.destination);
     state.score = makeGain(0.0001, null); state.duck = makeGain(1, state.master); state.score.connect(state.duck);
+    state.angelBus = makeGain(0.0001, state.master);
     state.sfxBus = makeGain(0.85, state.master);
     /* pad: detuned triangle/saw pairs per chord into one slow low-pass */
     state.padBus = makeGain(1, null);
@@ -330,6 +332,56 @@ function createEvaAudio() {
     playTone(state.berserkSirenBus, at, { type: 'sawtooth', freq: 120, peak: 0.05, attack: 0.06, decay: 1.35, filter: 'lowpass', filterFreq: 2400, q: 0.9 });
   }
 
+  /* -------------------------- ANGEL ATTACK --------------------------- */
+  /* Original tense cue for the TV-style title card: low E1/F1 ostinato,
+   * timpani hits, high cluster swells and a distant siren. No existing
+   * recording or melody is reproduced. */
+  var ANGEL_BEAT = 0.62;
+  function scheduleAngelBeat(step, at) {
+    var bus = state.angelBus;
+    if (!bus) return;
+    playTone(bus, at, {
+      type: 'triangle', freq: hz(step % 2 === 0 ? 28 : 29), peak: step % 2 === 0 ? 0.2 : 0.14,
+      attack: 0.008, decay: 0.58, filter: 'lowpass', filterFreq: 220, q: 0.8,
+    });
+    if (step === 0 || step === 4) {
+      playTone(bus, at, { type: 'sine', freq: 58, peak: 0.26, attack: 0.006, decay: 0.55, filter: 'lowpass', filterFreq: 160, q: 0.7 });
+      playNoise(bus, at, { filter: 'lowpass', from: 380, to: 110, dur: 0.35, attack: 0.005, peak: 0.07, q: 0.6 });
+    }
+    if (step === 0) {
+      playTone(bus, at, { type: 'sawtooth', freq: hz(64), peak: 0.035, attack: 0.5, decay: 2.2, filter: 'lowpass', filterFreq: 1200, q: 0.9 });
+      playTone(bus, at + 0.015, { type: 'sawtooth', freq: hz(65), peak: 0.03, attack: 0.6, decay: 2.4, filter: 'lowpass', filterFreq: 1400, q: 0.9 });
+    }
+    if (step === 6) {
+      playTone(bus, at, { type: 'sine', freq: 320, pitchTo: 220, peak: 0.035, attack: 0.1, decay: 1.0, filter: 'lowpass', filterFreq: 900, q: 0.7 });
+    }
+  }
+  function angelLoop() {
+    if (!state.ctx || !state.angelBus || !state.angelTimer) return;
+    var horizon = now() + 0.2;
+    var guard = 0;
+    while (state.angelNext < horizon && guard < 8) {
+      scheduleAngelBeat(state.angelBeat, state.angelNext);
+      state.angelNext += ANGEL_BEAT;
+      state.angelBeat = (state.angelBeat + 1) % 8;
+      guard += 1;
+    }
+  }
+  function startAngel() {
+    state.wantAngel = true;
+    if (state.disposed || !state.ctx || !state.unlocked) return;
+    if (state.angelTimer) return;
+    rampParam(state.angelBus.gain, 0.85, now(), 0.35);
+    state.angelBeat = 0; state.angelNext = now() + 0.06;
+    state.angelTimer = setInterval(angelLoop, 55);
+    angelLoop();
+  }
+  function stopAngel() {
+    state.wantAngel = false;
+    if (state.angelTimer) { try { clearInterval(state.angelTimer); } catch (error) {} state.angelTimer = 0; }
+    if (state.ctx && state.angelBus) rampParam(state.angelBus.gain, 0.0001, now(), 0.5);
+  }
+
   /* ------------------------ phase / mode changes ---------------------- */
   function applyPhase(phase, immediate) {
     state.phase = phase;
@@ -492,6 +544,7 @@ function createEvaAudio() {
       rampParam(state.master.gain, state.enabled ? MASTER_LEVEL : 0.0001, now(), 0.3);
       if (state.berserk) applyBerserk(true);
       if (state.wantBoot && !state.running) beginScore(); else applyPhase(state.phase, true);
+      if (state.wantAngel) startAngel();
     } else if (state.wantBoot && !state.running) beginScore();
     return true;
   }
@@ -573,7 +626,7 @@ function createEvaAudio() {
   function dispose() {
     if (state.disposed) return;
     state.disposed = true;
-    stopScheduler(); flushSpeech();
+    stopScheduler(); stopAngel(); flushSpeech();
     try {
       if (state.voiceListener && W && W.speechSynthesis && typeof W.speechSynthesis.removeEventListener === 'function') {
         W.speechSynthesis.removeEventListener('voiceschanged', state.voiceListener);
@@ -605,5 +658,6 @@ function createEvaAudio() {
     supported: true, unlock: unlock, isUnlocked: isUnlocked, setEnabled: setEnabled,
     startBoot: startBoot, setPhase: setPhase, stopBoot: stopBoot, setBerserk: setBerserk,
     sfx: sfx, speak: speak, setMuted: function (on) { setEnabled(!on); }, dispose: dispose,
+    startAngel: startAngel, stopAngel: stopAngel,
   };
 }

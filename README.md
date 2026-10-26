@@ -3,29 +3,30 @@
 把 **DeepSeek Harness Web GUI** 改成 EVA 启动控制台的皮肤插件（Cordis bundle，Host 提供余额/素材路由，Client 负责全部界面）。
 
 - 包名：`dsh-eva-unit-01-skin`
-- 当前版本：**v1.3.2**
+- 当前版本：**v1.4.0**
 - 形态：Client 侧皮肤插件 + 只读 Host 路由（余额、驾驶员素材）
 - 适配：Harness Desktop / Web 客户端，深色与浅色两套宿主配色
 
-## 启动警报（NERV EMERGENCY）
+## 开场：TV 风格「使徒、襲来」
 
-每次打开页面先播放约 3 秒的 **NERV 紧急警报**：
+页面加载后首先出现 TV 风格的标题卡：
 
-- 红色六边形 EMERGENCY 蜂巢、NERV 衬线字标、`God's In His Heaven / All's Right With The World`、实时倒计时 `03:29:59`
-- 红色脉冲、扫描线、轻微画面呼吸与闪烁；用户点击任意处会触发警报音效
-- 警报结束后自动进入驾驶员确认界面（驾驶员选择本身不会自动跳过）
+- 大字 **使徒、襲来 / ANGEL ATTACK**、原始几何使徒剪影、红色地震波形、`TOKYO-3 / 緊急放送`、扫描线与时间码
+- 点击「▶ 起動」后播放**原创**的使徒袭来 BGM（低音 E/F 半音固定音型、定音鼓、高频簇与远处警报）和标题动画；约 5 秒后进入驾驶员选择
+- 首次点击同时解锁浏览器音频；若不点击则停留在标题卡，不会自动跳转
+- **不是 TV 原片或原曲**：画面为新绘制的致敬元素，音乐为 WebAudio 实时合成的原创 cue；不复制任何官方画面/音轨
 
-![NERV 启动警报](docs/alarm.jpg)
+![使徒、襲来 开场](docs/angel.jpg)
 
-## 三名驾驶员 · 三台机体页面
+## 三名驾驶员 · 三台机体页面## 三名驾驶员 · 三台机体页面
 
 启动前的**插入栓认证界面**选择驾驶员，进入对应机体页面：
 
 | 驾驶员 | 机体 | 页面配色 | 语音 |
 | --- | --- | --- | --- |
-| 碇シンジ / SHINJI IKARI | **EVA-01 初号機** | 紫绿 NERV + 驾驶员蓝 | 系统 TTS · 低音/偏慢 `SOFT` |
+| 碇シンジ / SHINJI IKARI | **EVA-01 初号機** | 紫绿 NERV + 驾驶员蓝 | 系统 TTS · 少年感/偏慢/忧郁 `BOYISH` |
 | 明日香 / ASUKA LANGLEY | **EVA-02 二号機** | 红橙 + 深红黑 | 系统 TTS · 高音/偏快 `BRIGHT` |
-| 綾波レイ / REI AYANAMI | **EVA-00 零号機** | 白 / 冰蓝 + 冷灰 | 系统 TTS · 低音/单音 `MONO` |
+| 綾波レイ / REI AYANAMI | **EVA-00 零号機** | 白 / 冰蓝 + 冷灰 | 系统 TTS · 冷淡/低音/慢速 `COLD` |
 
 选择会持久化到 `localStorage: eva01.pilot`；工作台中的 `PILOT` 单元可随时切换驾驶员，主题、机体编号、角色语音、立绘与插入栓一起换。切换时会立刻用新驾驶员的 voice profile 朗读对应台词。
 
@@ -38,9 +39,9 @@
 - 左侧大型 **插入栓**（倾斜 14°）与橙色等高线背景，筒体标识 `ENTRY PLUG / 挿入栓`、`EVA-01 · 初号機`
 - 右侧三张驾驶员卡：驾驶员图像（插画裁切/线稿）+ 姓名 + 机体编号，选中卡描边、LED 与光晕点亮
 - 切换驾驶员时：插入栓内立绘重播插入动画，同步环从 0→100% 充能，`SYNC` 数字实时跳动
-- 插入栓窗口内的驾驶员图像与同步环叠加显示；`接続開始` 进入八幕启动序列
+- 进入页面时插入栓为空、没有加载动画；**点选驾驶员卡后**才开始插入 + 同步环 0→100% 的加载动画，装填完成后 `接続開始` 才可用
 - **必须人工确认**：先点选驾驶员卡（选中后 `接続開始` 才可用），再点击 `接続開始` 或 `音声なしで起動`；没有倒计时、没有点击空白跳过、没有自动启动
-- 每次打开/刷新页面都会先播放警报并停留在选人界面，直到你手动确认
+- 每次打开/刷新页面都会先播放「使徒、襲来」开场并停留在选人界面，直到你手动确认
 - 支持 `prefers-reduced-motion`（保留静态选人与声音）
 
 ![EVA-02 / 明日香页面](docs/pilot-asuka.jpg)
@@ -62,8 +63,8 @@
 ## 配乐 / 音效 / 驾驶员语音（原创合成）
 
 - **原创配乐**：WebAudio 运行时合成 4 小节循环（Em(add9) → Cmaj7 → Am(add9) → B7sus4，52 BPM；pad + 低音脉冲 + 心跳 + 钟琴动机 + 噪声微光），启动阶段逐层加入，进入主界面后降为 idle 环境声。**没有音频文件、没有现成歌曲。**
-- **原创音效**：`beep / alarm / clamp / lcl / sync / launch / typing / boot` 全部实时合成；启动警报界面首次点击会播放警报音。
-- **驾驶员语音**：每名驾驶员有独立 TTS 档案——Shinji `SOFT`（低音、偏慢）、Asuka `BRIGHT`（高音、偏快）、Rei `MONO`（低音、慢速、单音）；优先从系统日语语音中挑不同 voice（Reed/Eddy、Kyoko、Shelley 等，随 OS 可用性回退），再叠加各自 rate/pitch/volume。**不是声优克隆，也不包含动画原音**；台词为原创。说话时配乐自动压低。台词见 [`art/pilot-copy.md`](art/pilot-copy.md)。
+- **原创音效**：`beep / alarm / clamp / lcl / sync / launch / typing / boot` 全部实时合成；使徒袭来开场的首次点击会启动原创 BGM。
+- **驾驶员语音**：每名驾驶员有独立 TTS 档案——Shinji `BOYISH`（少年感、偏慢、带忧郁）、Asuka `BRIGHT`（高音、偏快、有力）、Rei `COLD`（冷淡、低音、慢速、单音）；优先从系统日语语音中挑不同 voice（Reed/Eddy、Kyoko、Shelley 等，随 OS 可用性回退），再叠加各自 rate/pitch/volume。**不是声优克隆，也不包含动画原音**；台词为原创。说话时配乐自动压低。台词见 [`art/pilot-copy.md`](art/pilot-copy.md)。
 - **字幕**：启动分镜与暴走时右上角显示驾驶员通讯字幕（日语 + 中文），可叠在启动动画之上。
 - **静音**：侧栏底部 `♪ 音声` 或底部遥测会统一开关；状态持久化 `eva01.sound`。
 
@@ -153,7 +154,6 @@ node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进
 | `art/*.svg` | 原创矢量：机体头像 / 徽章 / 驾驶员线稿源 / AT 力场 |
 | `assets/*.png` | 选人界面线稿与机体立绘（见 NOTICE） |
 | `assets/entry-plug.svg` | 插入栓素材（见 NOTICE） |
-| `assets/nerv-emergency.svg` | NERV 警报底图（见 NOTICE） |
 | `assets/avatar-shinji.png` / `portrait-shinji.png` | 项目所有者提供的碇真嗣插画裁切 |
 | `assets/avatar-asuka.png` / `portrait-asuka.png` | 项目所有者提供的明日香插画裁切 |
 | `assets/avatar-rei.png` / `portrait-rei.png` | 项目所有者提供的绫波丽线稿裁切/透明化 |
@@ -169,7 +169,7 @@ node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进
 ## 素材与授权
 
 - 代码与原创矢量/音频/台词：MIT（见 `LICENSE`）。
-- **插入栓 SVG** 与 **NERV 警报 SVG** 来自 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)，按其仓库说明其媒体素材不在 MIT 覆盖范围内；本仓库按用户要求引用并保留署名，权利归原作者。插入栓 SVG 做了 XML 合法性与内联样式修复；警报 SVG 移除了中间的 NERV 文案与时钟文字，改由界面层渲染。碇真嗣、明日香、绫波丽图像均使用项目所有者提供的插画/线稿素材裁切，版权归提供者。见 [`NOTICE.md`](NOTICE.md)。
+- **插入栓 SVG** 来自 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)，按其仓库说明其媒体素材不在 MIT 覆盖范围内；本仓库按用户要求引用并保留署名，权利归原作者。插入栓 SVG 做了 XML 合法性与内联样式修复。碇真嗣、明日香、绫波丽图像均使用项目所有者提供的插画/线稿素材裁切，版权归提供者。见 [`NOTICE.md`](NOTICE.md)。
 - 碇真嗣、明日香、绫波丽图像均使用项目所有者提供的插画/线稿素材裁切与透明化处理，不复制官方原画。
 - 不包含官方动画音轨、声优录音或官方美术素材；角色名与机体名为致敬性引用，本项目为非商业粉丝作品。
 

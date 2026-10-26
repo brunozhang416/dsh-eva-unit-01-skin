@@ -131,6 +131,52 @@ window.__ModuleLoader__.load({
     const soundSignal = createSignal(readSound());
     const captionSignal = createSignal(null);
     const pilotSwitchSignal = createSignal(0);
+    const balanceSignal = createSignal({ state: 'loading' });
+    let balanceFeedTimer = 0;
+
+    function loadBalance(force) {
+      const url = '/dsh-eva-unit-01/balance.json' + (force ? '?refresh=1' : '');
+      return fetch(url, { headers: { accept: 'application/json' }, credentials: 'same-origin' })
+        .then((response) => response.json())
+        .then((data) => {
+          const next = data && typeof data === 'object' ? data : { ok: false };
+          balanceSignal.set(next);
+          return next;
+        })
+        .catch(() => {
+          const next = { ok: false, code: 'OFFLINE' };
+          balanceSignal.set(next);
+          return next;
+        });
+    }
+
+    function startBalanceFeed() {
+      stopBalanceFeed();
+      loadBalance(false);
+      balanceFeedTimer = setInterval(() => loadBalance(false), 60000);
+    }
+
+    function stopBalanceFeed() {
+      if (!balanceFeedTimer) return;
+      clearInterval(balanceFeedTimer);
+      balanceFeedTimer = 0;
+    }
+
+    function usePower() {
+      const balance = useSignal(balanceSignal);
+      const amount = balance && balance.ok ? Number(balance.balance) : NaN;
+      const known = Number.isFinite(amount);
+      const pct = known ? Math.max(0, Math.min(100, amount)) : 0;
+      return {
+        balance,
+        known,
+        amount: known ? amount : null,
+        pct,
+        low: known && amount < 15,
+        text: known ? (balance.text || ('¥' + amount.toFixed(2))) : (balance && balance.code ? balance.code : '···'),
+      };
+    }
+
 
     /* __EVA_AUDIO__ */
 
@@ -832,15 +878,21 @@ window.__ModuleLoader__.load({
     function AngelIntro(props) {
       const [started, setStarted] = useState(false);
       const [elapsed, setElapsed] = useState(0);
+      const soundOn = useSignal(soundSignal);
 
       const start = () => {
         if (started) return;
         setStarted(true);
-        if (soundSignal.get()) {
-          audio.unlock().then((ok) => {
-            if (ok) audio.startAngel();
-          });
+        // Clicking the launch control is itself a request for sound: if the
+        // preference was muted, turn it back on for this session.
+        if (!soundSignal.get()) {
+          soundSignal.set(true);
+          writeSound(true);
+          audio.setEnabled(true);
         }
+        audio.unlock().then((ok) => {
+          if (ok) audio.startAngel();
+        });
       };
 
       useEffect(() => {
@@ -902,6 +954,8 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-angel__en' }, 'ANGEL ATTACK'),
           h('span', { className: 'eva-angel__meta' }, '第3新東京市 · TOKYO-3'),
           h('span', { className: 'eva-angel__meta eva-angel__meta--2' }, '特務機関 NERV · 第一種戦闘配置'),
+          h('span', { className: 'eva-angel__soundState', 'data-on': soundOn ? '1' : '0' },
+            soundOn ? 'AUDIO ONLINE · 音声 ON' : 'AUDIO OFFLINE · クリックで音声 ON'),
           started
             ? h('span', { className: 'eva-angel__status' }, 'ALERT LEVEL 1 · ORIGINAL CUE')
             : h('button', {
@@ -913,7 +967,7 @@ window.__ModuleLoader__.load({
                 },
               },
                 h('span', null, '▶ 起動'),
-                h('em', null, 'CLICK TO START · 音声 ' + (readSound() ? 'ON' : 'OFF')))),
+                h('em', null, 'CLICK TO START · 音声 ' + (soundOn ? 'ON' : 'OFF')))),
         h('span', { className: 'eva-angel__scan' }),
         h('span', { className: 'eva-angel__flash' }),
         h('span', { className: 'eva-angel__frame' }));
@@ -1153,12 +1207,30 @@ window.__ModuleLoader__.load({
           h('path', { d: 'M20 15H8l3 3M8 15l-3-3 3-3' })));
     }
 
+    /* Decorative entry-plug canopy around the centre column. */
+    function CockpitFrame() {
+      const pilot = usePilot();
+      return h('div', { className: 'eva-cockpit', 'aria-hidden': true },
+        h('span', { className: 'eva-cockpit__canopy' }),
+        h('span', { className: 'eva-cockpit__rail eva-cockpit__rail--l' }),
+        h('span', { className: 'eva-cockpit__rail eva-cockpit__rail--r' }),
+        h('span', { className: 'eva-cockpit__bar eva-cockpit__bar--top' }),
+        h('span', { className: 'eva-cockpit__bar eva-cockpit__bar--bottom' }),
+        h('span', { className: 'eva-cockpit__corner eva-cockpit__corner--tl' }),
+        h('span', { className: 'eva-cockpit__corner eva-cockpit__corner--tr' }),
+        h('span', { className: 'eva-cockpit__corner eva-cockpit__corner--bl' }),
+        h('span', { className: 'eva-cockpit__corner eva-cockpit__corner--br' }),
+        h('span', { className: 'eva-cockpit__label eva-cockpit__label--l' }, 'LCL / SYNC MONITOR'),
+        h('span', { className: 'eva-cockpit__label eva-cockpit__label--r' }, 'ENTRY PLUG · ' + pilot.unitEn));
+    }
+
     function Hud() {
       const fx = useSignal(fxSignal);
       const berserk = useSignal(berserkSignal);
       const sound = useSignal(soundSignal);
       const caption = useSignal(captionSignal);
       const pilot = usePilot();
+      const power = usePower();
       const [alarm, setAlarm] = useState(true);
       const [gate, setGate] = useState(true);
       const [run, setRun] = useState(-1);
@@ -1167,12 +1239,18 @@ window.__ModuleLoader__.load({
       const [burstDone, setBursted] = useState(0);
       const [berserkArt, setBerserkArt] = useState(null);
       const artTimer = useRef(0);
+      const lowPowerRef = useRef(false);
       const soundRef = useRef(sound);
       const lastBerserk = useRef(berserk);
       soundRef.current = sound;
 
       const startFromGate = (withSound) => {
-        if (withSound && soundRef.current) {
+        if (withSound && !soundRef.current) {
+          soundSignal.set(true);
+          writeSound(true);
+          audio.setEnabled(true);
+        }
+        if (withSound) {
           audio.unlock().then((ok) => {
             if (ok) {
               audio.setEnabled(true);
@@ -1209,6 +1287,32 @@ window.__ModuleLoader__.load({
         audio.stopBoot();
         audio.stopAngel();
       }), []);
+
+      useEffect(() => {
+        if (!power.known) return;
+        if (power.low && !lowPowerRef.current) {
+          lowPowerRef.current = true;
+          if (!berserkSignal.get()) toggleBerserk();
+        } else if (!power.low && lowPowerRef.current) {
+          lowPowerRef.current = false;
+          if (berserkSignal.get()) toggleBerserk();
+        }
+      }, [power.known, power.low]);
+
+      useEffect(() => {
+        try {
+          document.body.toggleAttribute('data-eva-low-power', Boolean(power.known && power.low));
+        } catch (error) {
+          /* document unavailable */
+        }
+        return () => {
+          try {
+            document.body.removeAttribute('data-eva-low-power');
+          } catch (error) {
+            /* nothing to clean up */
+          }
+        };
+      }, [power.known, power.low]);
 
       useEffect(() => {
         if (berserk === lastBerserk.current) return;
@@ -1315,7 +1419,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' }),
           berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
-        !alarm && !gate && !playing ? h(PilotSwitchButton) : null,
+        !alarm && !gate && !playing ? h(React.Fragment, null, h(CockpitFrame), h(PilotSwitchButton)) : null,
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing
@@ -1436,59 +1540,7 @@ window.__ModuleLoader__.load({
       const clock = useClock();
       const sound = useSignal(soundSignal);
       const pilot = usePilot();
-      const [balance, setBalance] = useState({ state: 'loading' });
-
-      useEffect(() => {
-        let alive = true;
-        let attempts = 0;
-        let retryTimer = 0;
-        const load = (force) => {
-          const url = '/dsh-eva-unit-01/balance.json' + (force ? '?refresh=1' : '');
-          fetch(url, { headers: { accept: 'application/json' }, credentials: 'same-origin' })
-            .then((response) => response.json())
-            .then((data) => {
-              attempts = 0;
-              if (alive) setBalance(data && typeof data === 'object' ? data : { ok: false });
-            })
-            .catch(() => {
-              if (!alive) return;
-              setBalance({ ok: false, code: 'OFFLINE' });
-              // The host route can appear a moment after the client module, so
-              // retry a few times before settling on OFFLINE.
-              if (attempts < 3) {
-                attempts += 1;
-                clearTimeout(retryTimer);
-                retryTimer = setTimeout(() => load(false), 2500);
-              }
-            });
-        };
-        load(false);
-        const timer = setInterval(() => load(false), 60000);
-        return () => {
-          alive = false;
-          clearTimeout(retryTimer);
-          clearInterval(timer);
-        };
-      }, []);
-
-      const refresh = () => {
-        setBalance({ state: 'loading' });
-        fetch('/dsh-eva-unit-01/balance.json?refresh=1', {
-          headers: { accept: 'application/json' },
-          credentials: 'same-origin',
-        })
-          .then((response) => response.json())
-          .then((data) => setBalance(data && typeof data === 'object' ? data : { ok: false }))
-          .catch(() => setBalance({ ok: false, code: 'OFFLINE' }));
-      };
-
-      const balanceText = balance && balance.ok
-        ? balance.text
-        : balance && balance.code === 'NO_KEY'
-          ? 'NO KEY'
-          : balance && balance.code
-            ? balance.code
-            : '···';
+      const power = usePower();
 
       return h('div', { className: 'eva-desk' },
         h('span', { className: 'eva-desk__tag' },
@@ -1503,15 +1555,25 @@ window.__ModuleLoader__.load({
           h('i', null, 'PILOT'),
           h('b', { className: 'eva-desk__value' }, pilot.name),
           h('em', { className: 'eva-desk__unit' }, 'EVA-' + pilot.unit)),
-        h('span', { className: 'eva-desk__cell eva-desk__cell--balance' },
-          h('i', null, 'BALANCE'),
-          h('b', { className: 'eva-desk__value' }, balanceText),
+        h('span', {
+          className: 'eva-desk__cell eva-desk__cell--balance',
+          'data-low': power.low ? '1' : '0',
+          title: 'EVA 电量 / 剩余额度',
+        },
+          h('i', null, 'POWER'),
+          h('b', { className: 'eva-desk__value' }, power.text),
+          h('span', { className: 'eva-desk__battery', 'aria-hidden': true },
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) =>
+              h('i', {
+                key: index,
+                'data-on': power.known && power.pct >= (index + 1) * 10 ? '1' : '0',
+              }))),
           h('button', {
             type: 'button',
             className: 'eva-desk__refresh',
-            title: '刷新余额 / REFRESH',
-            'aria-label': '刷新余额',
-            onClick: refresh,
+            title: '刷新电量 / REFRESH',
+            'aria-label': '刷新电量',
+            onClick: () => loadBalance(true),
           }, '↻')),
         h('span', { className: 'eva-desk__cell' },
           h('i', null, 'CLOCK'),
@@ -1536,6 +1598,7 @@ window.__ModuleLoader__.load({
       const clock = useClock();
       const berserk = useSignal(berserkSignal);
       const pilot = usePilot();
+      const power = usePower();
       const [sync, setSync] = useState(() => 98.4 + Math.random() * 1.6);
       useEffect(() => {
         const timer = setInterval(() => setSync(98.4 + Math.random() * 1.6), 1500);
@@ -1555,7 +1618,7 @@ window.__ModuleLoader__.load({
           RAIL_TICKS.map((height, index) => h('i', { key: index, style: { '--eva-tick': height } }))),
         h('span', { className: 'eva-rail__sep' }),
         h('span', { className: 'eva-rail__stat' }, 'MAGI', h('b', null, 'NOMINAL')),
-        h('span', { className: 'eva-rail__stat eva-rail__stat--power' }, 'POWER', h('b', null, 'LINKED')),
+        h('span', { className: 'eva-rail__stat eva-rail__stat--power', 'data-low': power.low ? '1' : '0' }, 'POWER', h('b', null, power.known ? Math.round(power.pct) + '%' : '--')),
         h('span', { className: 'eva-rail__stat eva-rail__stat--at' }, 'A.T.', h('b', null, '0.00')),
         h('span', { className: 'eva-rail__hazard' }),
         h(Art, { name: 'waveform', className: 'eva-rail__wave' }),
@@ -1572,6 +1635,7 @@ window.__ModuleLoader__.load({
       const clock = useClock();
       const berserk = useSignal(berserkSignal);
       const pilot = usePilot();
+      const power = usePower();
       return h('div', { className: 'eva-status', 'data-berserk': berserk ? '1' : '0' },
         h('div', { className: 'eva-status__main', 'aria-hidden': true },
           h('span', { className: 'eva-status__unit' },
@@ -1591,8 +1655,17 @@ window.__ModuleLoader__.load({
               [0, 1, 2, 3, 4, 5, 6, 7].map((index) => h('i', { key: index })))),
           h('span', { className: 'eva-status__metric eva-status__metric--wide' }, 'MAGI',
             h('b', null, berserk ? 'FAILED' : 'NOMINAL')),
-          h('span', { className: 'eva-status__metric eva-status__metric--wide' }, 'POWER',
-            h('b', null, berserk ? 'OVERLOAD' : 'LINKED')),
+          h('span', {
+            className: 'eva-status__metric eva-status__metric--wide eva-status__power',
+            'data-low': power.low ? '1' : '0',
+          }, 'POWER',
+            h('b', null, berserk ? 'OVERLOAD' : (power.known ? Math.round(power.pct) + '%' : '--')),
+            h('span', { className: 'eva-status__battery', 'aria-hidden': true },
+              [0, 1, 2, 3, 4].map((index) =>
+                h('i', {
+                  key: index,
+                  'data-on': power.known && power.pct >= (index + 1) * 20 ? '1' : '0',
+                })))),
           h('span', { className: 'eva-status__metric eva-status__metric--wide' }, 'A.T. FIELD',
             h('b', null, berserk ? 'COLLAPSED' : '0.00')),
           h('span', { className: 'eva-status__metric eva-status__metric--wide' }, 'LCL',
@@ -1621,14 +1694,28 @@ window.__ModuleLoader__.load({
     function HeaderTag() {
       const berserk = useSignal(berserkSignal);
       const pilot = usePilot();
+      const power = usePower();
       return h('span', {
         className: 'eva-headtag',
         'data-berserk': berserk ? '1' : '0',
+        'data-low-power': power.low ? '1' : '0',
         'aria-hidden': true,
       },
         h('span', { className: 'eva-headtag__led' }),
         h('span', { className: 'eva-headtag__unit' }, 'EVA-' + pilot.unit),
-        h('span', { className: 'eva-headtag__sub' }, berserk ? 'BERSERK' : 'PILOT ' + pilot.no));
+        h('span', { className: 'eva-headtag__sub' }, berserk ? 'BERSERK' : 'PILOT ' + pilot.no),
+        h('span', {
+          className: 'eva-headtag__power',
+          title: 'EVA 电量 · 剩余额度 ' + power.text,
+        },
+          h('em', null, 'PWR'),
+          h('span', { className: 'eva-headtag__battery', 'aria-hidden': true },
+            [0, 1, 2, 3, 4].map((index) =>
+              h('i', {
+                key: index,
+                'data-on': power.known && power.pct >= (index + 1) * 20 ? '1' : '0',
+              }))),
+          h('b', null, power.known ? Math.round(power.pct) + '%' : '--')));
     }
 
     /* ------------------------------------------------------------------ *
@@ -1739,6 +1826,11 @@ window.__ModuleLoader__.load({
             };
           });
         }
+
+        ctx.effect(() => {
+          startBalanceFeed();
+          return () => stopBalanceFeed();
+        });
 
         // Audio engine: original synthesised score + SFX + system TTS.  The
         // AudioContext is only created after a user gesture (gate / replay /

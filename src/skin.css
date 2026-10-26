@@ -5307,113 +5307,33 @@ body[data-eva-pilot="00"] .eva-gate__bg {
    --------------------------------------------------------------------- */
 .eva-switch {
   position: fixed;
-  left: 232px;
-  top: 60px;
+  left: 236px;
+  top: 62px;
   z-index: 60;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   padding: 0;
-  border: 1px solid var(--dsw-alias-border-l2);
-  background: linear-gradient(180deg, var(--dsw-alias-bg-layer-1), var(--dsw-alias-bg-base));
-  color: var(--dsw-alias-label-primary);
-  font-family: var(--eva-font-hud);
-  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--eva-accent);
   cursor: pointer;
   pointer-events: auto;
-  border-radius: 4px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.eva-switch::before {
-  content: "切换驾驶员 / SWITCH PILOT";
-  position: absolute;
-  right: 0;
-  top: 34px;
-  padding: 3px 6px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-secondary);
-  font-size: 8px;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateY(-2px);
-  transition: opacity 0.15s, transform 0.15s;
-  pointer-events: none;
-  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
-}
-.eva-switch:hover::before {
-  opacity: 1;
-  transform: translateY(0);
-}
-.eva-switch::after {
-  content: "↻";
-  position: absolute;
-  right: 1px;
-  bottom: -1px;
-  padding: 0 2px;
-  font-size: 9px;
-  line-height: 1;
-  color: var(--eva-accent);
-  background: var(--dsw-alias-bg-layer-1);
-}
-.eva-switch__led,
-.eva-switch__body,
-.eva-switch__unit {
-  display: none;
-}
-.eva-switch__avatar {
-  width: 20px;
-  height: 20px;
-  border: 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .eva-switch:hover {
-  border-color: var(--eva-pilot);
-  box-shadow: 0 0 14px var(--eva-pilot-glow);
-}
-.eva-switch__led {
-  width: 5px;
-  height: 5px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--eva-accent);
-  box-shadow: 0 0 7px var(--eva-accent);
-}
-.eva-switch__body {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  min-width: 0;
-}
-.eva-switch__body b {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.eva-switch__body em {
-  font-style: normal;
-  font-size: 7px;
-  letter-spacing: 0.16em;
-  color: var(--dsw-alias-label-secondary);
-  white-space: nowrap;
-}
-.eva-switch__unit {
-  margin-left: auto;
-  font-size: 8px;
-  letter-spacing: 0.14em;
   color: var(--eva-pilot);
-  white-space: nowrap;
+  border-color: var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: 0 0 12px var(--eva-pilot-glow);
 }
-.eva-switch__avatar {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  overflow: hidden;
-  border: 0;
+.eva-switch__icon {
+  display: block;
+  width: 17px;
+  height: 17px;
 }
 body:has([data-collapsed="true"]) .eva-switch {
   display: none;

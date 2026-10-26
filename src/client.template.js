@@ -1129,7 +1129,6 @@ window.__ModuleLoader__.load({
     /* Floating "switch pilot" control above the sidebar's new-conversation
      * button. Opens the entry-plug gate again. */
     function PilotSwitchButton() {
-      const pilot = usePilot();
       return h('button', {
         type: 'button',
         className: 'eva-switch',
@@ -1140,12 +1139,18 @@ window.__ModuleLoader__.load({
           openPilotSwitch();
         },
       },
-        h('span', { className: 'eva-switch__led' }),
-        h('span', { className: 'eva-switch__body' },
-          h('b', null, '切换驾驶员'),
-          h('em', null, 'SWITCH PILOT')),
-        h('span', { className: 'eva-switch__unit' }, 'EVA-' + pilot.unit),
-        h(PilotImage, { pilot, kind: 'avatar', className: 'eva-switch__avatar' }));
+        h('svg', {
+          className: 'eva-switch__icon',
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          'stroke-width': '1.8',
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          'aria-hidden': true,
+        },
+          h('path', { d: 'M4 9h12l-3-3M16 9l3 3-3 3' }),
+          h('path', { d: 'M20 15H8l3 3M8 15l-3-3 3-3' })));
     }
 
     function Hud() {

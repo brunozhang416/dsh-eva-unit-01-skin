@@ -932,21 +932,11 @@ window.__ModuleLoader__.load({
       },
         h('span', { className: 'eva-angel__grain' }),
         h('span', { className: 'eva-angel__entity', 'aria-hidden': true },
-          h('svg', { viewBox: '0 0 200 340', fill: 'none' },
-            h('path', {
-              d: 'M100 16 132 50 122 98 100 114 78 98 68 50Z',
-              fill: '#ded8ea', opacity: '0.9',
-            }),
-            h('path', { d: 'M76 66 124 66M100 40v54', stroke: '#ff2d2d', 'stroke-width': '2' }),
-            h('path', {
-              d: 'M92 114h16l12 88-10 122h-20l-10-122z',
-              fill: '#b9b2c9', opacity: '0.8',
-            }),
-            h('path', { d: 'M86 122 52 196 64 210 96 160Z', fill: '#9a92ab', opacity: '0.7' }),
-            h('path', { d: 'M114 122 148 196 136 210 104 160Z', fill: '#9a92ab', opacity: '0.7' }),
-            h('circle', { cx: '100', cy: '154', r: '9', fill: '#ff1a1a' }),
-            h('path', { d: 'M78 292l22 18 22-18', stroke: '#ded8ea', 'stroke-width': '2', opacity: '0.5' })),
-        ),
+          h('img', {
+            className: 'eva-angel__entityImg',
+            src: assetUrl('angel-ascend.png'),
+            alt: '',
+          })),
         h('span', { className: 'eva-angel__seismic', 'aria-hidden': true },
           h('svg', { viewBox: '0 0 1200 120', preserveAspectRatio: 'none' },
             h('path', {

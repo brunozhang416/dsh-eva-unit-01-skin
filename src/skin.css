@@ -5091,20 +5091,41 @@ body[data-eva-pilot="00"] .eva-gate__bg {
 .eva-angel__entity {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 52%;
   z-index: 1;
-  width: min(300px, 24vw);
-  transform: translate(-50%, -50%) scale(0.9);
-  opacity: 0.13;
-  filter: drop-shadow(0 0 36px rgba(255, 0, 0, 0.25));
+  width: min(620px, 50vw);
+  max-height: 76vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%) scale(0.94);
+  opacity: 0.25;
+  filter: drop-shadow(0 0 42px rgba(255, 45, 45, 0.28)) saturate(0.95) contrast(1.04);
+  pointer-events: none;
 }
-.eva-angel__entity svg {
+.eva-angel__entity::before {
+  content: "";
+  position: absolute;
+  inset: -6%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(190, 22, 30, 0.28), rgba(120, 8, 16, 0.08) 45%, transparent 68%);
+  filter: blur(12px);
+}
+.eva-angel__entityImg {
   display: block;
   width: 100%;
   height: auto;
+  max-height: 76vh;
+  object-fit: contain;
+  mix-blend-mode: screen;
 }
 .eva-angel[data-started="1"] .eva-angel__entity {
   animation: eva-angel-rise 5s ease-out both;
+}
+@keyframes eva-angel-rise {
+  from { opacity: 0.08; transform: translate(-50%, -47%) scale(0.82); }
+  to { opacity: 0.4; transform: translate(-50%, -53%) scale(1.03); }
 }
 .eva-angel__seismic {
   position: absolute;
@@ -5208,10 +5229,6 @@ body[data-eva-pilot="00"] .eva-gate__bg {
 @keyframes eva-angel-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.15; }
-}
-@keyframes eva-angel-rise {
-  from { opacity: 0.05; transform: translate(-50%, -46%) scale(0.82); }
-  to { opacity: 0.3; transform: translate(-50%, -52%) scale(1.02); }
 }
 @keyframes eva-angel-scan {
   from { stroke-dashoffset: 1900; }

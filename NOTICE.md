@@ -30,6 +30,13 @@ plugsuit; Rei in her plugsuit inside the entry plug). Copyright remains with the
 they are included at the owner's explicit request and are not covered by this
 repository's MIT license.
 
+
+`assets/angel-ascend.png` is a transparent cutout of the winged angel/figure
+from a poster reference image supplied by the project owner, used for the
+"使徒、襲来" opening card. Copyright remains with the original author; it is
+included at the owner's request and is not covered by this repository's MIT
+license.
+
 ## Music, voice and the rest
 
 All music and sound effects are synthesised at runtime by `src/audio.js` from an

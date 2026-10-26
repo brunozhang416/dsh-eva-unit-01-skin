@@ -1,6 +1,6 @@
 {
   "name": "dsh-eva-unit-01-skin",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "private": true,
   "type": "module",
   "description": "EVA Unit-01/02/00 launch-console skin for the DeepSeek Harness Web GUI: entry-plug pilot selection (Shinji/Asuka/Rei), character line-art, seven-scene boot sequence, original synthesised score, pilot voice (system TTS), account balance widget and berserk mode.",

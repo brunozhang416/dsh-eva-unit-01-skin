@@ -6077,13 +6077,13 @@ body:has([data-collapsed="true"]) .eva-canopy { left: 56px; }
 .eva-cp__actions { margin-left: 6px; display: inline-flex; align-items: center; gap: 3px; font-size: 0; pointer-events: auto; }
 .eva-cp__action {
   appearance: none;
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: 1px solid var(--cp-line);
   background: rgba(4, 2, 9, 0.45);
   color: var(--cp-muted);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1;
   cursor: pointer;
 }
@@ -6115,3 +6115,51 @@ body:has([data-collapsed="true"]) .eva-canopy { left: 56px; }
 .eva-cp__reopen b { margin-left: auto; font-weight: 500; color: var(--cp-ink); }
 .eva-cp__reopen:hover { border-color: var(--cp-accent); box-shadow: 0 0 18px rgba(157, 255, 74, 0.14); }
 .eva-cp[data-collapsed="1"] { max-height: 30px; }
+
+/* sidebar brand-row pilot panel toggle */
+.eva-pilot-toggle {
+  position: fixed;
+  left: 168px;
+  top: 23px;
+  z-index: 25;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border: 1px solid rgba(185, 139, 224, 0.28);
+  border-radius: 0;
+  background: rgba(5, 3, 12, 0.22);
+  color: var(--dsw-alias-label-secondary);
+  font-family: var(--eva-font-hud);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.14s, border-color 0.14s, background 0.14s, box-shadow 0.14s;
+}
+.eva-pilot-toggle__glyph { font-size: 10px; line-height: 1; color: var(--dsw-alias-label-secondary); }
+.eva-pilot-toggle__en { font-size: 6px; letter-spacing: 0.14em; opacity: 0.5; }
+.eva-pilot-toggle:hover,
+.eva-pilot-toggle[data-open="1"] {
+  color: var(--dsw-alias-label-primary);
+  border-color: var(--eva-accent);
+  background: color-mix(in srgb, var(--eva-accent) 9%, transparent);
+  box-shadow: 0 0 14px var(--eva-glow);
+}
+.eva-pilot-toggle[data-open="1"] .eva-pilot-toggle__glyph { color: var(--eva-accent); }
+body:has([data-collapsed="true"]) .eva-pilot-toggle {
+  left: 64px;
+  top: 58px;
+  width: 24px;
+  padding: 0;
+  justify-content: center;
+}
+body:has([data-collapsed="true"]) .eva-pilot-toggle__label,
+body:has([data-collapsed="true"]) .eva-pilot-toggle__en {
+  display: none;
+}
+.eva-cp[data-overlay="1"] {
+  z-index: 35;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.62), 0 0 30px rgba(157, 255, 74, 0.1);
+}

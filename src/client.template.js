@@ -131,6 +131,7 @@ window.__ModuleLoader__.load({
     const soundSignal = createSignal(readSound());
     const captionSignal = createSignal(null);
     const pilotSwitchSignal = createSignal(0);
+    const cockpitOpenSignal = createSignal(false);
     const balanceSignal = createSignal({ state: 'loading' });
     let balanceFeedTimer = 0;
 
@@ -1228,7 +1229,7 @@ window.__ModuleLoader__.load({
      * so the merged cockpit panel never covers the conversation and follows
      * both sidebars as they collapse/expand. */
     function useCockpitPlacement() {
-      const [place, setPlace] = useState({ visible: false, left: 0, width: 196, minLeft: 0, maxLeft: 0 });
+      const [place, setPlace] = useState({ measured: false, overlay: false, left: 0, width: 196, minLeft: 0, maxLeft: 0 });
       useEffect(() => {
         let alive = true;
         let raf = 0;
@@ -1248,15 +1249,24 @@ window.__ModuleLoader__.load({
             const columnRect = column.getBoundingClientRect();
             const sidebarRight = sidebar ? sidebar.getBoundingClientRect().right : 0;
             const available = columnRect.left - sidebarRight - 16;
-            const width = Math.min(228, Math.floor(available));
-            const visible = available >= 154 && width >= 154;
+            const overlay = available < 154;
             const minLeft = Math.max(4, sidebarRight + 6);
-            let left = visible ? Math.max(minLeft, columnRect.left - width - 8) : 0;
-            const maxLeft = visible ? Math.max(minLeft, columnRect.left - width - 8) : 0;
-            const key = visible ? Math.round(left) + ':' + width + ':' + Math.round(minLeft) + ':' + Math.round(maxLeft) : 'hidden';
+            let width;
+            let left;
+            let maxLeft;
+            if (overlay) {
+              width = Math.min(228, Math.max(154, window.innerWidth - sidebarRight - 24));
+              left = sidebarRight + 8;
+              maxLeft = Math.max(minLeft, window.innerWidth - width - 8);
+            } else {
+              width = Math.min(228, Math.floor(available));
+              left = Math.max(minLeft, columnRect.left - width - 8);
+              maxLeft = Math.max(minLeft, columnRect.left - width - 8);
+            }
+            const key = [Math.round(left), width, Math.round(minLeft), Math.round(maxLeft), overlay ? 1 : 0].join(':');
             if (key === last) return;
             last = key;
-            setPlace({ visible, left, width, minLeft, maxLeft });
+            setPlace({ measured: true, overlay, left, width, minLeft, maxLeft });
           } catch (error) {
             /* host not mounted yet */
           }
@@ -1339,6 +1349,22 @@ window.__ModuleLoader__.load({
       }
     }
 
+    /* Text control in the sidebar brand row; opens/closes the merged panel. */
+    function PilotToggle() {
+      const open = useSignal(cockpitOpenSignal);
+      return h('button', {
+        type: 'button',
+        className: 'eva-pilot-toggle',
+        'data-open': open ? '1' : '0',
+        'aria-expanded': open ? 'true' : 'false',
+        title: '切换驾驶员 / PILOT PANEL',
+        onClick: () => cockpitOpenSignal.set(!open),
+      },
+        h('span', { className: 'eva-pilot-toggle__glyph', 'aria-hidden': true }, '⇄'),
+        h('span', { className: 'eva-pilot-toggle__label' }, '切换驾驶员'),
+        h('span', { className: 'eva-pilot-toggle__en' }, 'PILOT'));
+    }
+
     /* One merged cockpit panel: pilot on top, EVA POWER/status below, pilot
      * switching at the bottom. The old separate left/right consoles and the
      * duplicate header/workbench/status readouts were removed. */
@@ -1350,7 +1376,7 @@ window.__ModuleLoader__.load({
       const [jitter, setJitter] = useState(0);
       const [manual, setManual] = useState(() => readPanelPos());
       const [collapsed, setCollapsed] = useState(() => readPanelFlag('panelCollapsed'));
-      const [hidden, setHidden] = useState(() => readPanelFlag('panelHidden'));
+      const open = useSignal(cockpitOpenSignal);
       const panelRef = useRef(null);
       const dragRef = useRef(null);
       useEffect(() => {
@@ -1360,21 +1386,13 @@ window.__ModuleLoader__.load({
       useEffect(() => () => {
         dragRef.current = null;
       }, []);
-      if (!place.visible) return null;
+      if (!place.measured || !open) return null;
 
       const maxTop = () => Math.max(48, window.innerHeight - ((panelRef.current && panelRef.current.offsetHeight) || 420) - 14);
       const clampLeft = (value) => Math.min(Math.max(value, place.minLeft), Math.max(place.minLeft, place.maxLeft));
       const position = manual
         ? { left: clampLeft(manual.left), top: Math.min(Math.max(manual.top, 48), maxTop()) }
         : { left: place.left, top: 58 };
-      const showPanel = () => {
-        setHidden(false);
-        writePanelFlag('panelHidden', false);
-      };
-      const hidePanel = () => {
-        setHidden(true);
-        writePanelFlag('panelHidden', true);
-      };
       const toggleCollapsed = () => {
         setCollapsed((value) => {
           const next = !value;
@@ -1382,18 +1400,9 @@ window.__ModuleLoader__.load({
           return next;
         });
       };
-      if (hidden) {
-        return h('button', {
-          type: 'button',
-          className: 'eva-cp__reopen',
-          style: { left: position.left + 'px', top: position.top + 'px', width: place.width + 'px' },
-          title: '展开 COCKPIT 面板',
-          'aria-label': '展开 COCKPIT 面板',
-          onClick: showPanel,
-        },
-          h('span', null, 'COCKPIT'),
-          h('b', null, '＋'));
-      }
+      const closePanel = () => {
+        cockpitOpenSignal.set(false);
+      };
       const beginDrag = (event) => {
         if (event.button !== 0) return;
         const target = event.currentTarget;
@@ -1439,6 +1448,7 @@ window.__ModuleLoader__.load({
         'data-berserk': berserk ? '1' : '0',
         'data-low': power.low ? '1' : '0',
         'data-collapsed': collapsed ? '1' : '0',
+        'data-overlay': place.overlay ? '1' : '0',
         'aria-label': '驾驶舱信息与电量',
       },
         h('div', {
@@ -1469,7 +1479,7 @@ window.__ModuleLoader__.load({
               className: 'eva-cp__action',
               title: '隐藏 / HIDE',
               'aria-label': '隐藏面板',
-              onClick: hidePanel,
+              onClick: closePanel,
             }, '×'))),
         collapsed ? null : h('div', { className: 'eva-cp__pilot' },
           h('div', { className: 'eva-cp__photo' },
@@ -1742,7 +1752,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' }),
           berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
-        !alarm && !gate && !playing ? h(CockpitPanel) : null,
+        !alarm && !gate && !playing ? h(React.Fragment, null, h(CockpitPanel), h(PilotToggle)) : null,
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing

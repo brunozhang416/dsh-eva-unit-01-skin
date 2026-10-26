@@ -5233,3 +5233,70 @@ body[data-eva-pilot="00"] .eva-gate__bg {
     animation: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------
+   BERSERK CUT-IN — supplied Unit-01 / Unit-02 artwork for ~4 seconds.
+   --------------------------------------------------------------------- */
+.eva-berserk-art {
+  position: fixed;
+  right: 2vw;
+  bottom: 3vh;
+  z-index: 3;
+  height: min(78vh, 980px);
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+  animation: eva-berserk-art 4.25s ease-out both;
+}
+.eva-berserk-art[data-unit="asuka"] {
+  right: 3vw;
+  height: min(66vh, 820px);
+}
+.eva-berserk-art img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 34px rgba(255, 0, 0, 0.35)) saturate(1.06) contrast(1.04);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%);
+}
+.eva-berserk-art__scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 4px);
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.eva-berserk-art__label {
+  position: absolute;
+  left: 8%;
+  bottom: 4%;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 59, 59, 0.6);
+  background: rgba(12, 2, 4, 0.75);
+  color: #ff6b6b;
+  font-family: var(--eva-font-hud);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  white-space: nowrap;
+}
+@keyframes eva-berserk-art {
+  0% { opacity: 0; transform: translateX(48px) scale(1.04); filter: blur(7px); }
+  9% { opacity: 0.92; transform: translateX(0) scale(1); filter: none; }
+  76% { opacity: 0.92; }
+  100% { opacity: 0; transform: translateX(0) scale(1); }
+}
+@media (max-width: 900px) {
+  .eva-berserk-art {
+    height: 48vh;
+    right: 1vw;
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eva-berserk-art {
+    animation: none;
+    opacity: 0.75;
+  }
+}

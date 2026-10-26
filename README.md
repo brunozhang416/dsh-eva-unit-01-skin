@@ -3,7 +3,7 @@
 把 **DeepSeek Harness Web GUI** 改成 EVA 启动控制台的皮肤插件（Cordis bundle，Host 提供余额/素材路由，Client 负责全部界面）。
 
 - 包名：`dsh-eva-unit-01-skin`
-- 当前版本：**v1.5.0**
+- 当前版本：**v1.5.1**
 - 形态：Client 侧皮肤插件 + 只读 Host 路由（余额、驾驶员素材）
 - 适配：Harness Desktop / Web 客户端，深色与浅色两套宿主配色
 
@@ -97,6 +97,12 @@
 
 ## 失控模式（BERSERK / 暴走）
 
+- **暴走立绘切入**：初号机 / 二号机暴走时，会展示你提供的暴走立绘（已抠图透明背景）约 4 秒；切入时缩放/故障闪烁，结束时淡出。零号机不展示此立绘。
+- 图片由项目所有者提供并已完成背景抠除，归提供者所有。
+
+![初号机暴走立绘](docs/berserk-01.jpg)
+![二号机暴走立绘](docs/berserk-02.jpg)
+
 底部遥测条最右 `⚠ 暴走` 或侧栏底部 `⚠ 暴走`：
 
 - 全站血红/琥珀配色；`制御不能` 爆闪 + 驾驶员失控语音
@@ -158,6 +164,7 @@ node build.mjs --check   # 把 src/skin.css、art/*.svg、src/audio.js 内联进
 | `art/*.svg` | 原创矢量：机体头像 / 徽章 / 驾驶员线稿源 / AT 力场 |
 | `assets/*.png` | 选人界面线稿与机体立绘（见 NOTICE） |
 | `assets/entry-plug.svg` | 插入栓素材（见 NOTICE） |
+| `assets/berserk-01.png` / `berserk-02.png` | 初号机/二号机暴走立绘（抠图，所有者提供） |
 | `assets/avatar-shinji.png` / `portrait-shinji.png` | 项目所有者提供的碇真嗣插画裁切 |
 | `assets/avatar-asuka.png` / `portrait-asuka.png` | 项目所有者提供的明日香插画裁切 |
 | `assets/avatar-rei.png` / `portrait-rei.png` | 项目所有者提供的绫波丽线稿裁切/透明化 |

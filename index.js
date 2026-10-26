@@ -19,6 +19,8 @@ const ASSET_FILES = new Map([
   ['portrait-asuka.png', 'image/png'],
   ['portrait-rei.png', 'image/png'],
   ['entry-plug.svg', 'image/svg+xml'],
+  ['berserk-01.png', 'image/png'],
+  ['berserk-02.png', 'image/png'],
 ]);
 const ASSET_ROOT = new URL('./assets/', import.meta.url);
 

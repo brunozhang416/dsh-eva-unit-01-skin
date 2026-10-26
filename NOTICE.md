@@ -16,6 +16,11 @@ non-commercial fan project. The entry plug SVG was additionally repaired to be
 valid standalone XML (a valueless `data-boot-unit` attribute) and given an
 internal `<style>` fallback for its CSS variables.
 
+`assets/berserk-01.png` and `assets/berserk-02.png` are Unit-01/Unit-02
+berserk illustrations supplied by the project owner; backgrounds were removed
+with the system foreground-mask API. They are included at the owner's request
+and are not covered by this repository's MIT license.
+
 `assets/avatar-shinji.png`, `assets/portrait-shinji.png`,
 `assets/avatar-asuka.png`, `assets/portrait-asuka.png`,
 `assets/avatar-rei.png` and `assets/portrait-rei.png` are crops / transparent

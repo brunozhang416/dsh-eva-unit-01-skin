@@ -19,7 +19,7 @@ window.__ModuleLoader__.load({
     const SOUND_KEY = 'eva01.sound';
     const GATE_KEY = 'eva01.gate';
     const PILOT_KEY = 'eva01.pilot';
-    const ASSET_VERSION = '1.4.1';
+    const ASSET_VERSION = '1.5.1';
 
     const assetUrl = (file) => '/dsh-eva-unit-01/assets/' + file + '?v=' + ASSET_VERSION;
 
@@ -1108,6 +1108,19 @@ window.__ModuleLoader__.load({
      * Persistent HUD frame: corner brackets, frame rails, scanlines and the
      * launch player.
      * ------------------------------------------------------------------ */
+    /* Berserk cut-in: the supplied Unit-01 / Unit-02 art, shown for ~4 s
+     * after berserk is switched on (Unit-00 has no cut-in). */
+    function BerserkArt(props) {
+      const unit = props.unit;
+      if (!unit) return null;
+      const file = unit === 'asuka' ? 'berserk-02.png' : 'berserk-01.png';
+      return h('div', { className: 'eva-berserk-art', 'data-unit': unit, 'aria-hidden': true },
+        h('img', { src: assetUrl(file), alt: '' }),
+        h('span', { className: 'eva-berserk-art__scan' }),
+        h('span', { className: 'eva-berserk-art__label' },
+          'BERSERK / 暴走 · ' + (unit === 'asuka' ? 'UNIT-02' : 'UNIT-01')));
+    }
+
     function Hud() {
       const fx = useSignal(fxSignal);
       const berserk = useSignal(berserkSignal);
@@ -1120,6 +1133,8 @@ window.__ModuleLoader__.load({
       const [finished, setFinished] = useState(-1);
       const [burstRun, setBurstRun] = useState(0);
       const [burstDone, setBursted] = useState(0);
+      const [berserkArt, setBerserkArt] = useState(null);
+      const artTimer = useRef(0);
       const soundRef = useRef(sound);
       const lastBerserk = useRef(berserk);
       soundRef.current = sound;
@@ -1160,10 +1175,20 @@ window.__ModuleLoader__.load({
         if (berserk) {
           audio.sfx('alarm');
           sayLine('berserk_on');
+          const unitKey = pilotSignal.get();
+          if (unitKey === 'shinji' || unitKey === 'asuka') {
+            setBerserkArt(unitKey);
+            clearTimeout(artTimer.current);
+            artTimer.current = setTimeout(() => setBerserkArt(null), 4300);
+          }
         } else {
+          clearTimeout(artTimer.current);
+          setBerserkArt(null);
           sayLine('berserk_off');
         }
       }, [berserk]);
+
+      useEffect(() => () => clearTimeout(artTimer.current), []);
 
       useEffect(() => () => {
         clearTimeout(captionTimer);
@@ -1246,7 +1271,8 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__edge' }),
           h('span', { className: 'eva-hud__scan' }),
           h('span', { className: 'eva-hud__scanlines' }),
-          h('span', { className: 'eva-hud__vignette' })),
+          h('span', { className: 'eva-hud__vignette' }),
+          berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing

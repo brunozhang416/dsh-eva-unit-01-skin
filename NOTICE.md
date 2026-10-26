@@ -6,26 +6,25 @@ The following files are reused from
 [`seaison/dsh-plugin-eva-theme`](https://github.com/seaison/dsh-plugin-eva-theme)
 at the project owner's explicit request, for the pilot-selection screen:
 
-- `assets/avatar-asuka.png` — original file `assets/images/asuka-avatar-closed-eyes.png`
-- `assets/avatar-rei.png` — original file `assets/images/rei-avatar-closed-eyes.png`
-- `assets/portrait-asuka.png` — original file `assets/images/asuka-portrait-lineart.png`
-- `assets/portrait-rei.png` — original file `assets/images/rei-portrait-lineart.png`
 - `assets/entry-plug.svg` — original file `assets/svg/eva-entry-plug.svg`
 - `assets/nerv-emergency.svg` — original file `assets/svg/nerv-emergency.svg` (central NERV/motto/clock text removed so the UI can render live text)
 
 That project's `LICENSE` covers code under MIT but explicitly excludes third-party
 media assets, and its `NOTICE.md`/`docs/assets.md` record the provenance of the
-character line art and the entry plug. All rights remain with their respective
+entry plug and emergency artwork. All rights remain with their respective
 authors; this repository only redistributes them with attribution for a
 non-commercial fan project. The entry plug SVG was additionally repaired to be
 valid standalone XML (a valueless `data-boot-unit` attribute) and given an
 internal `<style>` fallback for its CSS variables.
 
-`assets/avatar-shinji.png` and `assets/portrait-shinji.png` are crops of an
-illustration supplied directly by the project owner for this personal fan
-project (the seated Shinji in a room with headphones and SDAT). Copyright remains
-with the supplier; they are included at the owner's explicit request and are not
-covered by this repository's MIT license.
+`assets/avatar-shinji.png`, `assets/portrait-shinji.png`,
+`assets/avatar-asuka.png`, `assets/portrait-asuka.png`,
+`assets/avatar-rei.png` and `assets/portrait-rei.png` are crops / transparent
+line-art conversions of images supplied directly by the project owner for this
+personal fan project (Shinji in his room with headphones/SDAT; Asuka in her red
+plugsuit; Rei as a blue line-art sketch). Copyright remains with the supplier;
+they are included at the owner's explicit request and are not covered by this
+repository's MIT license.
 
 ## Music, voice and the rest
 

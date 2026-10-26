@@ -19,6 +19,9 @@ window.__ModuleLoader__.load({
     const SOUND_KEY = 'eva01.sound';
     const GATE_KEY = 'eva01.gate';
     const PILOT_KEY = 'eva01.pilot';
+    const ASSET_VERSION = '1.3.2';
+
+    const assetUrl = (file) => '/dsh-eva-unit-01/assets/' + file + '?v=' + ASSET_VERSION;
 
     function readFx() {
       try {
@@ -153,7 +156,8 @@ window.__ModuleLoader__.load({
         assetAvatar: 'avatar-shinji.png',
         assetPortrait: 'portrait-shinji.png',
         photo: true,
-        voice: { rate: 0.95, pitch: 1.05 },
+        voice: { rate: 0.9, pitch: 0.92, volume: 0.95, prefer: ['reed', 'eddy', 'otoya', 'kyoko'] },
+        voiceLabel: 'SOFT',
         lines: {
           gate: { jp: 'ゲートの前で、足が止まる', zh: '在闸门前，脚迈不动。' },
           boot: { jp: 'システム、起動した…？', zh: '系统…启动了吗？' },
@@ -183,7 +187,9 @@ window.__ModuleLoader__.load({
         head: 'head02',
         assetAvatar: 'avatar-asuka.png',
         assetPortrait: 'portrait-asuka.png',
-        voice: { rate: 1.06, pitch: 1.18 },
+        photo: true,
+        voice: { rate: 1.12, pitch: 1.38, volume: 1, prefer: ['kyoko', 'sandy', 'flo'] },
+        voiceLabel: 'BRIGHT',
         lines: {
           gate: { jp: '私に任せなさい！', zh: '交给我吧！' },
           boot: { jp: 'システム、起動ね。', zh: '系统，启动了呢。' },
@@ -213,7 +219,9 @@ window.__ModuleLoader__.load({
         head: 'head00',
         assetAvatar: 'avatar-rei.png',
         assetPortrait: 'portrait-rei.png',
-        voice: { rate: 0.86, pitch: 0.92 },
+        photo: true,
+        voice: { rate: 0.78, pitch: 0.8, volume: 0.8, prefer: ['kyoko', 'shelley', 'flo'] },
+        voiceLabel: 'MONO',
         lines: {
           gate: { jp: '……指示をください。', zh: '……请下指示。' },
           boot: { jp: 'システム、起動。', zh: '系统，启动。' },
@@ -286,6 +294,8 @@ window.__ModuleLoader__.load({
           lang: 'ja-JP',
           rate: pilot.voice.rate,
           pitch: pilot.voice.pitch,
+          volume: pilot.voice.volume,
+          voice: pilot.voice.prefer,
         });
       }
     }
@@ -342,7 +352,7 @@ window.__ModuleLoader__.load({
     function PilotImage(props) {
       const pilot = props.pilot;
       const file = props.kind === 'portrait' ? pilot.assetPortrait : pilot.assetAvatar;
-      const url = '/dsh-eva-unit-01/assets/' + file;
+      const url = assetUrl(file);
       const className = 'eva-pilot-img' + (props.className ? ' ' + props.className : '');
       if (pilot.photo) {
         return h('span', { className: className + ' eva-pilot-img--photo', 'aria-hidden': true },
@@ -823,7 +833,7 @@ window.__ModuleLoader__.load({
       },
         h('img', {
           className: 'eva-alarm__bg',
-          src: '/dsh-eva-unit-01/assets/nerv-emergency.svg',
+          src: assetUrl('nerv-emergency.svg'),
           alt: '',
         }),
         h('span', { className: 'eva-alarm__flash' }),
@@ -901,7 +911,7 @@ window.__ModuleLoader__.load({
             h('div', { className: 'eva-gate__plug' },
               h('img', {
                 className: 'eva-gate__plugImg',
-                src: '/dsh-eva-unit-01/assets/entry-plug.svg',
+                src: assetUrl('entry-plug.svg'),
                 alt: '',
               }),
               h('span', { className: 'eva-gate__plugGlow' }),
@@ -946,7 +956,7 @@ window.__ModuleLoader__.load({
             h('div', { className: 'eva-gate__selectMeta' },
               h('b', null, pilot.name),
               h('span', null, pilot.en + ' · PILOT ' + pilot.no),
-              h('i', null, 'A10 · LCL · ' + pilot.unitEn)),
+              h('i', null, 'A10 · LCL · ' + pilot.unitEn + ' · VOICE ' + pilot.voiceLabel)),
             h('div', { className: 'eva-gate__actions' },
               h('button', {
                 type: 'button',

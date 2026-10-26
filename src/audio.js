@@ -409,7 +409,7 @@ function createEvaAudio() {
   /* -------------------------------- TTS ------------------------------- */
   /* Japanese voice preferred, serialized queue, score ducked to 25 % while
    * speaking. Missing speechSynthesis resolves immediately. */
-  function pickVoice() {
+  function pickVoice(preferred) {
     try {
       var synth = W && W.speechSynthesis;
       if (!synth || typeof synth.getVoices !== 'function') return null;
@@ -417,6 +417,17 @@ function createEvaAudio() {
       for (var i = 0; i < voices.length; i += 1) {
         var voice = voices[i];
         if (voice && typeof voice.lang === 'string' && voice.lang.toLowerCase().indexOf('ja') === 0) japanese.push(voice);
+      }
+      /* Per-pilot preferences first, so Shinji/Asuka/Rei can use different
+       * installed Japanese voices where the OS provides them. */
+      if (preferred && preferred.length) {
+        for (var p = 0; p < preferred.length; p += 1) {
+          var token = String(preferred[p] || '').toLowerCase();
+          if (!token) continue;
+          for (var k = 0; k < japanese.length; k += 1) {
+            if (String(japanese[k].name || '').toLowerCase().indexOf(token) !== -1) return japanese[k];
+          }
+        }
       }
       for (var j = 0; j < japanese.length; j += 1) {
         if (/kyoko|nanami|haruka|ayumi|ichiro|takumi|otoya|hattori|google/i.test(japanese[j].name || '')) return japanese[j];
@@ -436,8 +447,8 @@ function createEvaAudio() {
     try {
       var synth = W.speechSynthesis;
       if (!synth) { task.resolve(); pumpSpeech(); return; }
-      var utterance = new W.SpeechSynthesisUtterance(task.text), voice = speech.voice || pickVoice();
-      if (voice) { speech.voice = voice; utterance.voice = voice; }
+      var utterance = new W.SpeechSynthesisUtterance(task.text), voice = pickVoice(task.opts.voice);
+      if (voice) { utterance.voice = voice; }
       utterance.lang = task.opts.lang || (voice && voice.lang) || 'ja-JP';
       utterance.rate = clampNumber(task.opts.rate, 0.95, 0.5, 2);
       utterance.pitch = clampNumber(task.opts.pitch, 1.05, 0.1, 2);

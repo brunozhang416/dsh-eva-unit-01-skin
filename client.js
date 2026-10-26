@@ -19,6 +19,9 @@ window.__ModuleLoader__.load({
     const SOUND_KEY = 'eva01.sound';
     const GATE_KEY = 'eva01.gate';
     const PILOT_KEY = 'eva01.pilot';
+    const ASSET_VERSION = '1.3.2';
+
+    const assetUrl = (file) => '/dsh-eva-unit-01/assets/' + file + '?v=' + ASSET_VERSION;
 
     function readFx() {
       try {
@@ -539,7 +542,7 @@ function createEvaAudio() {
   /* -------------------------------- TTS ------------------------------- */
   /* Japanese voice preferred, serialized queue, score ducked to 25 % while
    * speaking. Missing speechSynthesis resolves immediately. */
-  function pickVoice() {
+  function pickVoice(preferred) {
     try {
       var synth = W && W.speechSynthesis;
       if (!synth || typeof synth.getVoices !== 'function') return null;
@@ -547,6 +550,17 @@ function createEvaAudio() {
       for (var i = 0; i < voices.length; i += 1) {
         var voice = voices[i];
         if (voice && typeof voice.lang === 'string' && voice.lang.toLowerCase().indexOf('ja') === 0) japanese.push(voice);
+      }
+      /* Per-pilot preferences first, so Shinji/Asuka/Rei can use different
+       * installed Japanese voices where the OS provides them. */
+      if (preferred && preferred.length) {
+        for (var p = 0; p < preferred.length; p += 1) {
+          var token = String(preferred[p] || '').toLowerCase();
+          if (!token) continue;
+          for (var k = 0; k < japanese.length; k += 1) {
+            if (String(japanese[k].name || '').toLowerCase().indexOf(token) !== -1) return japanese[k];
+          }
+        }
       }
       for (var j = 0; j < japanese.length; j += 1) {
         if (/kyoko|nanami|haruka|ayumi|ichiro|takumi|otoya|hattori|google/i.test(japanese[j].name || '')) return japanese[j];
@@ -566,8 +580,8 @@ function createEvaAudio() {
     try {
       var synth = W.speechSynthesis;
       if (!synth) { task.resolve(); pumpSpeech(); return; }
-      var utterance = new W.SpeechSynthesisUtterance(task.text), voice = speech.voice || pickVoice();
-      if (voice) { speech.voice = voice; utterance.voice = voice; }
+      var utterance = new W.SpeechSynthesisUtterance(task.text), voice = pickVoice(task.opts.voice);
+      if (voice) { utterance.voice = voice; }
       utterance.lang = task.opts.lang || (voice && voice.lang) || 'ja-JP';
       utterance.rate = clampNumber(task.opts.rate, 0.95, 0.5, 2);
       utterance.pitch = clampNumber(task.opts.pitch, 1.05, 0.1, 2);
@@ -751,7 +765,8 @@ function createEvaAudio() {
         assetAvatar: 'avatar-shinji.png',
         assetPortrait: 'portrait-shinji.png',
         photo: true,
-        voice: { rate: 0.95, pitch: 1.05 },
+        voice: { rate: 0.9, pitch: 0.92, volume: 0.95, prefer: ['reed', 'eddy', 'otoya', 'kyoko'] },
+        voiceLabel: 'SOFT',
         lines: {
           gate: { jp: 'ゲートの前で、足が止まる', zh: '在闸门前，脚迈不动。' },
           boot: { jp: 'システム、起動した…？', zh: '系统…启动了吗？' },
@@ -781,7 +796,9 @@ function createEvaAudio() {
         head: 'head02',
         assetAvatar: 'avatar-asuka.png',
         assetPortrait: 'portrait-asuka.png',
-        voice: { rate: 1.06, pitch: 1.18 },
+        photo: true,
+        voice: { rate: 1.12, pitch: 1.38, volume: 1, prefer: ['kyoko', 'sandy', 'flo'] },
+        voiceLabel: 'BRIGHT',
         lines: {
           gate: { jp: '私に任せなさい！', zh: '交给我吧！' },
           boot: { jp: 'システム、起動ね。', zh: '系统，启动了呢。' },
@@ -811,7 +828,9 @@ function createEvaAudio() {
         head: 'head00',
         assetAvatar: 'avatar-rei.png',
         assetPortrait: 'portrait-rei.png',
-        voice: { rate: 0.86, pitch: 0.92 },
+        photo: true,
+        voice: { rate: 0.78, pitch: 0.8, volume: 0.8, prefer: ['kyoko', 'shelley', 'flo'] },
+        voiceLabel: 'MONO',
         lines: {
           gate: { jp: '……指示をください。', zh: '……请下指示。' },
           boot: { jp: 'システム、起動。', zh: '系统，启动。' },
@@ -884,6 +903,8 @@ function createEvaAudio() {
           lang: 'ja-JP',
           rate: pilot.voice.rate,
           pitch: pilot.voice.pitch,
+          volume: pilot.voice.volume,
+          voice: pilot.voice.prefer,
         });
       }
     }
@@ -940,7 +961,7 @@ function createEvaAudio() {
     function PilotImage(props) {
       const pilot = props.pilot;
       const file = props.kind === 'portrait' ? pilot.assetPortrait : pilot.assetAvatar;
-      const url = '/dsh-eva-unit-01/assets/' + file;
+      const url = assetUrl(file);
       const className = 'eva-pilot-img' + (props.className ? ' ' + props.className : '');
       if (pilot.photo) {
         return h('span', { className: className + ' eva-pilot-img--photo', 'aria-hidden': true },
@@ -1421,7 +1442,7 @@ function createEvaAudio() {
       },
         h('img', {
           className: 'eva-alarm__bg',
-          src: '/dsh-eva-unit-01/assets/nerv-emergency.svg',
+          src: assetUrl('nerv-emergency.svg'),
           alt: '',
         }),
         h('span', { className: 'eva-alarm__flash' }),
@@ -1499,7 +1520,7 @@ function createEvaAudio() {
             h('div', { className: 'eva-gate__plug' },
               h('img', {
                 className: 'eva-gate__plugImg',
-                src: '/dsh-eva-unit-01/assets/entry-plug.svg',
+                src: assetUrl('entry-plug.svg'),
                 alt: '',
               }),
               h('span', { className: 'eva-gate__plugGlow' }),
@@ -1544,7 +1565,7 @@ function createEvaAudio() {
             h('div', { className: 'eva-gate__selectMeta' },
               h('b', null, pilot.name),
               h('span', null, pilot.en + ' · PILOT ' + pilot.no),
-              h('i', null, 'A10 · LCL · ' + pilot.unitEn)),
+              h('i', null, 'A10 · LCL · ' + pilot.unitEn + ' · VOICE ' + pilot.voiceLabel)),
             h('div', { className: 'eva-gate__actions' },
               h('button', {
                 type: 'button',

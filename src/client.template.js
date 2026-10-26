@@ -832,15 +832,19 @@ window.__ModuleLoader__.load({
     function AngelIntro(props) {
       const [started, setStarted] = useState(false);
       const [elapsed, setElapsed] = useState(0);
+      const soundOn = useSignal(soundSignal);
 
       const start = () => {
         if (started) return;
         setStarted(true);
-        if (soundSignal.get()) {
-          audio.unlock().then((ok) => {
-            if (ok) audio.startAngel();
-          });
+        if (!soundSignal.get()) {
+          soundSignal.set(true);
+          writeSound(true);
+          audio.setEnabled(true);
         }
+        audio.unlock().then((ok) => {
+          if (ok) audio.startAngel();
+        });
       };
 
       useEffect(() => {
@@ -913,7 +917,7 @@ window.__ModuleLoader__.load({
                 },
               },
                 h('span', null, '▶ 起動'),
-                h('em', null, 'CLICK TO START · 音声 ' + (readSound() ? 'ON' : 'OFF')))),
+                h('em', null, 'CLICK TO START · 音声 ' + (soundOn ? 'ON' : 'OFF')))),
         h('span', { className: 'eva-angel__scan' }),
         h('span', { className: 'eva-angel__flash' }),
         h('span', { className: 'eva-angel__frame' }));
@@ -1172,7 +1176,12 @@ window.__ModuleLoader__.load({
       soundRef.current = sound;
 
       const startFromGate = (withSound) => {
-        if (withSound && soundRef.current) {
+        if (withSound && !soundRef.current) {
+          soundSignal.set(true);
+          writeSound(true);
+          audio.setEnabled(true);
+        }
+        if (withSound) {
           audio.unlock().then((ok) => {
             if (ok) {
               audio.setEnabled(true);

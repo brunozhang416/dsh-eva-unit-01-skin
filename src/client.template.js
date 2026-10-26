@@ -1224,58 +1224,315 @@ window.__ModuleLoader__.load({
         h('span', { className: 'eva-canopy__hazard' }));
     }
 
-    /* Pilot dossier: the left-hand cockpit console from the approved concept. */
-    function PilotDossier() {
+    /* Measure the free margin between the left sidebar and the chat body,
+     * so the merged cockpit panel never covers the conversation and follows
+     * both sidebars as they collapse/expand. */
+    function useCockpitPlacement() {
+      const [place, setPlace] = useState({ visible: false, left: 0, width: 196, minLeft: 0, maxLeft: 0 });
+      useEffect(() => {
+        let alive = true;
+        let raf = 0;
+        let last = '';
+        const measure = () => {
+          raf = 0;
+          if (!alive) return;
+          try {
+            const main = document.querySelector('[data-slot="main"]');
+            const center = main && main.parentElement;
+            const sidebar = document.querySelector('[class*="sidebarCol"]')
+              || (center && center.previousElementSibling);
+            const column = document.querySelector('[data-slot="main"] [class*="_column"]')
+              || document.querySelector('[data-slot="main"] [data-composer-card]')
+              || document.querySelector('[class*="ST7X_W_body"]');
+            if (!column) return;
+            const columnRect = column.getBoundingClientRect();
+            const sidebarRight = sidebar ? sidebar.getBoundingClientRect().right : 0;
+            const available = columnRect.left - sidebarRight - 16;
+            const width = Math.min(228, Math.floor(available));
+            const visible = available >= 154 && width >= 154;
+            const minLeft = Math.max(4, sidebarRight + 6);
+            let left = visible ? Math.max(minLeft, columnRect.left - width - 8) : 0;
+            const maxLeft = visible ? Math.max(minLeft, columnRect.left - width - 8) : 0;
+            const key = visible ? Math.round(left) + ':' + width + ':' + Math.round(minLeft) + ':' + Math.round(maxLeft) : 'hidden';
+            if (key === last) return;
+            last = key;
+            setPlace({ visible, left, width, minLeft, maxLeft });
+          } catch (error) {
+            /* host not mounted yet */
+          }
+        };
+        const schedule = () => {
+          if (!raf) raf = window.requestAnimationFrame(measure);
+        };
+        const targets = [
+          document.body,
+          document.querySelector('[data-slot="main"]'),
+          document.querySelector('[data-slot="main"] [class*="_column"]'),
+          document.querySelector('[data-composer-card]'),
+        ].filter(Boolean);
+        let observer = null;
+        try {
+          observer = new ResizeObserver(schedule);
+          targets.forEach((target) => observer.observe(target));
+        } catch (error) {
+          observer = null;
+        }
+        let mutations = null;
+        try {
+          mutations = new MutationObserver(schedule);
+          mutations.observe(document.body, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            attributeFilter: ['class', 'style', 'data-collapsed', 'data-ds-dark-theme'],
+          });
+        } catch (error) {
+          mutations = null;
+        }
+        window.addEventListener('resize', schedule);
+        window.addEventListener('transitionend', schedule, true);
+        const timer = setInterval(schedule, 800);
+        schedule();
+        return () => {
+          alive = false;
+          if (raf) cancelAnimationFrame(raf);
+          if (observer) observer.disconnect();
+          if (mutations) mutations.disconnect();
+          window.removeEventListener('resize', schedule);
+          window.removeEventListener('transitionend', schedule, true);
+          clearInterval(timer);
+        };
+      }, []);
+      return place;
+    }
+
+    function readPanelPos() {
+      try {
+        const raw = window.localStorage.getItem('eva01.panel');
+        const value = raw ? JSON.parse(raw) : null;
+        if (value && Number.isFinite(value.left) && Number.isFinite(value.top)) return value;
+      } catch (error) {
+        /* unavailable */
+      }
+      return null;
+    }
+
+    function writePanelPos(value) {
+      try {
+        if (value) window.localStorage.setItem('eva01.panel', JSON.stringify(value));
+        else window.localStorage.removeItem('eva01.panel');
+      } catch (error) {
+        /* unavailable */
+      }
+    }
+
+    function readPanelFlag(key) {
+      try { return window.localStorage.getItem('eva01.' + key) === '1'; } catch (error) { return false; }
+    }
+
+    function writePanelFlag(key, value) {
+      try {
+        if (value) window.localStorage.setItem('eva01.' + key, '1');
+        else window.localStorage.removeItem('eva01.' + key);
+      } catch (error) {
+        /* unavailable */
+      }
+    }
+
+    /* One merged cockpit panel: pilot on top, EVA POWER/status below, pilot
+     * switching at the bottom. The old separate left/right consoles and the
+     * duplicate header/workbench/status readouts were removed. */
+    function CockpitPanel() {
+      const place = useCockpitPlacement();
       const pilot = usePilot();
-      const berserk = useSignal(berserkSignal);
       const power = usePower();
+      const berserk = useSignal(berserkSignal);
       const [jitter, setJitter] = useState(0);
+      const [manual, setManual] = useState(() => readPanelPos());
+      const [collapsed, setCollapsed] = useState(() => readPanelFlag('panelCollapsed'));
+      const [hidden, setHidden] = useState(() => readPanelFlag('panelHidden'));
+      const panelRef = useRef(null);
+      const dragRef = useRef(null);
       useEffect(() => {
         const timer = setInterval(() => setJitter(Math.random() * 0.8), 1800);
         return () => clearInterval(timer);
       }, []);
+      useEffect(() => () => {
+        dragRef.current = null;
+      }, []);
+      if (!place.visible) return null;
+
+      const maxTop = () => Math.max(48, window.innerHeight - ((panelRef.current && panelRef.current.offsetHeight) || 420) - 14);
+      const clampLeft = (value) => Math.min(Math.max(value, place.minLeft), Math.max(place.minLeft, place.maxLeft));
+      const position = manual
+        ? { left: clampLeft(manual.left), top: Math.min(Math.max(manual.top, 48), maxTop()) }
+        : { left: place.left, top: 58 };
+      const showPanel = () => {
+        setHidden(false);
+        writePanelFlag('panelHidden', false);
+      };
+      const hidePanel = () => {
+        setHidden(true);
+        writePanelFlag('panelHidden', true);
+      };
+      const toggleCollapsed = () => {
+        setCollapsed((value) => {
+          const next = !value;
+          writePanelFlag('panelCollapsed', next);
+          return next;
+        });
+      };
+      if (hidden) {
+        return h('button', {
+          type: 'button',
+          className: 'eva-cp__reopen',
+          style: { left: position.left + 'px', top: position.top + 'px', width: place.width + 'px' },
+          title: '展开 COCKPIT 面板',
+          'aria-label': '展开 COCKPIT 面板',
+          onClick: showPanel,
+        },
+          h('span', null, 'COCKPIT'),
+          h('b', null, '＋'));
+      }
+      const beginDrag = (event) => {
+        if (event.button !== 0) return;
+        const target = event.currentTarget;
+        try { target.setPointerCapture(event.pointerId); } catch (error) { /* ignore */ }
+        dragRef.current = {
+          pointerId: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+          left: position.left,
+          top: position.top,
+        };
+      };
+      const moveDrag = (event) => {
+        const drag = dragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        event.preventDefault();
+        const next = {
+          left: clampLeft(drag.left + event.clientX - drag.x),
+          top: Math.min(Math.max(drag.top + event.clientY - drag.y, 48), maxTop()),
+        };
+        setManual(next);
+      };
+      const endDrag = (event) => {
+        const drag = dragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        dragRef.current = null;
+        try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (error) { /* ignore */ }
+        setManual((value) => {
+          if (value) writePanelPos(value);
+          return value;
+        });
+      };
+      const resetDrag = () => {
+        setManual(null);
+        writePanelPos(null);
+      };
       const sync = berserk ? 412.0 : 98.4 + jitter;
-      const rows = [
-        ['A10 NERVE CLIPS', 'LOCKED / L-R', 'ok'],
-        ['LCL PRESSURE', '0.00 / NOMINAL', ''],
-        ['VOICE PROFILE', pilot.voiceLabel, 'blue'],
-        ['UNIT ASSIGNMENT', 'EVA-' + pilot.no + ' ' + pilot.unitJp, 'blue'],
-        ['PILOT STATE', berserk ? 'BERSERK' : 'READY', berserk ? 'danger' : 'ok'],
-      ];
+      const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       return h('aside', {
-        className: 'eva-dossier',
+        ref: panelRef,
+        className: 'eva-cp',
+        style: { left: position.left + 'px', top: position.top + 'px', width: place.width + 'px' },
         'data-berserk': berserk ? '1' : '0',
         'data-low': power.low ? '1' : '0',
-        'aria-label': '驾驶员信息',
+        'data-collapsed': collapsed ? '1' : '0',
+        'aria-label': '驾驶舱信息与电量',
       },
-        h('div', { className: 'eva-dossier__head' },
-          h('b', null, 'PILOT FILE'),
-          h('span', null, '0' + pilot.no + ' // NERV')),
-        h('div', { className: 'eva-dossier__photo' },
-          h(PilotImage, { pilot, kind: 'portrait', className: 'eva-dossier__portrait' }),
-          h('span', { className: 'eva-dossier__tag' }, 'PILOT ' + pilot.no),
-          h('span', { className: 'eva-dossier__tag eva-dossier__tag--unit' }, 'EVA-' + pilot.no),
-          h('div', { className: 'eva-dossier__name' },
-            h('b', null, pilot.name),
-            h('span', null, pilot.en + ' · ' + pilot.unitEn))),
-        h('div', { className: 'eva-dossier__body' },
-          h('div', { className: 'eva-dossier__sync' },
+        h('div', {
+          className: 'eva-cp__head',
+          title: '拖动面板 / 双击复位',
+          onPointerDown: beginDrag,
+          onPointerMove: moveDrag,
+          onPointerUp: endDrag,
+          onPointerCancel: endDrag,
+          onDoubleClick: resetDrag,
+        },
+          h('span', { className: 'eva-cp__grip' }, '⠿'),
+          h('b', null, 'COCKPIT'),
+          h('span', null, 'EVA-' + pilot.unit + ' // PILOT ' + pilot.no),
+          h('span', {
+            className: 'eva-cp__actions',
+            onPointerDown: (event) => event.stopPropagation(),
+          },
+            h('button', {
+              type: 'button',
+              className: 'eva-cp__action',
+              title: collapsed ? '展开 / EXPAND' : '收起 / COLLAPSE',
+              'aria-label': collapsed ? '展开面板' : '收起面板',
+              onClick: toggleCollapsed,
+            }, collapsed ? '＋' : '－'),
+            h('button', {
+              type: 'button',
+              className: 'eva-cp__action',
+              title: '隐藏 / HIDE',
+              'aria-label': '隐藏面板',
+              onClick: hidePanel,
+            }, '×'))),
+        collapsed ? null : h('div', { className: 'eva-cp__pilot' },
+          h('div', { className: 'eva-cp__photo' },
+            h(PilotImage, { pilot, kind: 'portrait', className: 'eva-cp__portrait' }),
+            h('span', { className: 'eva-cp__tag' }, 'PILOT ' + pilot.no),
+            h('span', { className: 'eva-cp__tag eva-cp__tag--unit' }, 'EVA-' + pilot.no),
+            h('div', { className: 'eva-cp__name' },
+              h('b', null, pilot.name),
+              h('span', null, pilot.en + ' · ' + pilot.unitEn))),
+          h('div', { className: 'eva-cp__sync' },
             h('span', {
-              className: 'eva-dossier__ring',
+              className: 'eva-cp__ring',
               style: { '--eva-sync': Math.min(100, sync).toFixed(1) + '%' },
             },
               h('b', null, berserk ? '412' : sync.toFixed(1)),
               h('em', null, 'SYNC')),
-            h('span', { className: 'eva-dossier__syncText' },
+            h('span', { className: 'eva-cp__syncText' },
               h('i', null, 'SYNCHRONIZATION'),
               h('b', null, berserk ? '412.0%' : sync.toFixed(1) + '%'))),
-          h('div', { className: 'eva-dossier__rows' },
-            rows.map((row) => h('span', { key: row[0], className: 'eva-dossier__row' },
-              h('i', null, row[0]),
-              h('b', { 'data-tone': row[2] }, row[1]))))),
-        h('div', { className: 'eva-dossier__foot' },
-          h('span', { className: 'eva-dossier__selectLabel' }, 'PILOT SELECT / 驾驶员'),
-          h('div', { className: 'eva-dossier__tabs', role: 'group', 'aria-label': '选择驾驶员' },
+          h('div', { className: 'eva-cp__rows' },
+            [['A10 NERVE CLIPS', 'LOCKED / L-R', 'ok'],
+             ['LCL PRESSURE', '0.00 / NOMINAL', ''],
+             ['VOICE PROFILE', pilot.voiceLabel, 'blue']].map((row) =>
+              h('span', { key: row[0], className: 'eva-cp__row' },
+                h('i', null, row[0]),
+                h('b', { 'data-tone': row[2] }, row[1]))))),
+        collapsed ? null : h('div', { className: 'eva-cp__power' },
+          h('div', { className: 'eva-cp__powerHead' },
+            h('b', null, 'EVA POWER'),
+            h('span', null, 'MAIN BUS / B+'),
+            h('button', {
+              type: 'button',
+              className: 'eva-cp__refresh',
+              title: '刷新电量 / REFRESH',
+              'aria-label': '刷新电量',
+              onClick: () => loadBalance(true),
+            }, '↻')),
+          h('div', { className: 'eva-cp__gauge' },
+            h('div', { className: 'eva-cp__battery', 'aria-hidden': true },
+              h('span', { className: 'eva-cp__threshold' }),
+              cells.map((index) => h('i', {
+                key: index,
+                'data-on': power.known && power.pct >= (index + 1) * 10 ? '1' : '0',
+              }))),
+            h('div', { className: 'eva-cp__readout' },
+              h('span', null, 'REMAINING CHARGE'),
+              h('b', { className: 'eva-cp__pct' },
+                power.known ? Math.round(power.pct) : '--',
+                h('small', null, '%')),
+              h('span', null, 'ACCOUNT BALANCE'),
+              h('b', { className: 'eva-cp__amount' }, power.text),
+              h('em', null, 'LOW POWER / 残量 15% 以下 → BERSERK'))),
+          h('div', { className: 'eva-cp__stats' },
+            [['MAGI', berserk ? 'FAILED' : 'NOMINAL', berserk ? 'danger' : 'ok'],
+             ['A.T. FIELD', berserk ? 'DOWN' : 'STANDBY', 'blue'],
+             ['UPLINK', 'SECURE', 'ok'],
+             ['MODE', berserk ? 'BERSERK' : 'NORMAL', berserk ? 'danger' : '']].map((row) =>
+              h('span', { key: row[0] },
+                h('i', null, row[0]),
+                h('b', { 'data-tone': row[2] }, row[1]))))),
+        collapsed ? null : h('div', { className: 'eva-cp__switch' },
+          h('span', { className: 'eva-cp__switchLabel' }, 'PILOT SELECT / 驾驶员'),
+          h('div', { className: 'eva-cp__tabs', role: 'group', 'aria-label': '选择驾驶员' },
             Object.keys(PILOTS).map((key) => h('button', {
               key,
               type: 'button',
@@ -1288,66 +1545,6 @@ window.__ModuleLoader__.load({
             },
               h('b', null, PILOTS[key].name),
               h('span', null, PILOTS[key].en.split(' ')[0]))))));
-    }
-
-    /* Right-hand EVA POWER / balance console from the approved concept. */
-    function PowerPanel() {
-      const power = usePower();
-      const berserk = useSignal(berserkSignal);
-      const pilot = usePilot();
-      const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-      return h('aside', {
-        className: 'eva-powerpanel',
-        'data-low': power.low ? '1' : '0',
-        'data-berserk': berserk ? '1' : '0',
-        'aria-label': 'EVA 电量',
-      },
-        h('div', { className: 'eva-powerpanel__head' },
-          h('i', null),
-          h('b', null, 'EVA POWER'),
-          h('span', null, 'MAIN BUS / B+'),
-          h('button', {
-            type: 'button',
-            className: 'eva-powerpanel__refresh',
-            title: '刷新电量 / REFRESH',
-            onClick: () => loadBalance(true),
-          }, '↻')),
-        h('div', { className: 'eva-powerpanel__body' },
-          h('div', { className: 'eva-powerpanel__gauge' },
-            h('div', { className: 'eva-powerpanel__battery', 'aria-hidden': true },
-              h('span', { className: 'eva-powerpanel__threshold' }),
-              cells.map((index) => h('i', {
-                key: index,
-                'data-on': power.known && power.pct >= (index + 1) * (100 / cells.length) ? '1' : '0',
-              }))),
-            h('div', { className: 'eva-powerpanel__readout' },
-              h('span', null, 'REMAINING CHARGE'),
-              h('b', { className: 'eva-powerpanel__pct' },
-                power.known ? Math.round(power.pct) : '--',
-                h('small', null, '%')),
-              h('span', null, 'ACCOUNT BALANCE'),
-              h('b', { className: 'eva-powerpanel__amount' }, power.text),
-              h('em', { className: 'eva-powerpanel__low' }, 'LOW POWER / 残量 15% 以下 → BERSERK'))),
-          h('p', { className: 'eva-powerpanel__note' },
-            '剩余额度实时映射为 EVA 电量：¥1 ≈ 1%。低于 ¥15 自动进入暴走；电量恢复后自动解除。'),
-          h('div', { className: 'eva-powerpanel__stats' },
-            [['SYNC RATIO', berserk ? '412.0%' : '98.4%', 'ok'],
-             ['A10 CLIPS', 'LOCKED', 'ok'],
-             ['LCL PRESSURE', '0.00', ''],
-             ['AT FIELD', berserk ? 'DOWN' : 'STANDBY', 'blue'],
-             ['MAGI', 'NOMINAL', 'ok'],
-             ['VOICE', pilot.voiceLabel, 'blue']].map((row) => h('span', { key: row[0] },
-              h('i', null, row[0]),
-              h('b', { 'data-tone': row[2] }, row[1])))),
-          h('div', { className: 'eva-powerpanel__wave' }, cells.map((index) => h('i', {
-            key: index,
-            style: { '--eva-wave': (24 + ((index * 37) % 76)) + '%' },
-          })))),
-        h('div', { className: 'eva-powerpanel__foot' },
-          h('span', null, 'PILOT AUTHORITY', h('b', null, 'GRANTED')),
-          h('span', null, 'UPLINK', h('b', null, 'SECURE')),
-          h('span', null, 'UNIT STATUS', h('b', null, berserk ? 'BERSERK' : 'ACTIVE')),
-          h('span', null, 'CYCLE', h('b', null, '0001 / 起動'))));
     }
 
     function Hud() {
@@ -1545,7 +1742,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-hud__scanlines' }),
           h('span', { className: 'eva-hud__vignette' }),
           berserkArt ? h(BerserkArt, { unit: berserkArt }) : null),
-        !alarm && !gate && !playing ? h(React.Fragment, null, h(CockpitChrome), h(PilotDossier), h(PowerPanel), h(PilotSwitchButton)) : null,
+        !alarm && !gate && !playing ? h(CockpitPanel) : null,
         alarm ? h(AngelIntro, { onDone: () => setAlarm(false) })
           : gate ? h(PilotGate, { onStart: startFromGate }) : null,
         playing
@@ -1761,7 +1958,6 @@ window.__ModuleLoader__.load({
       const clock = useClock();
       const berserk = useSignal(berserkSignal);
       const pilot = usePilot();
-      const power = usePower();
       return h('div', { className: 'eva-status', 'data-berserk': berserk ? '1' : '0' },
         h('div', { className: 'eva-status__main', 'aria-hidden': true },
           h('span', { className: 'eva-status__unit' },
@@ -1771,33 +1967,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'eva-status__tag' },
             berserk ? '暴走 / BERSERK' : '発進管制 / LAUNCH CONTROL'),
           h('span', { className: 'eva-status__sep' }),
-          h('span', { className: 'eva-status__pilot' },
-            h(PilotImage, { pilot, kind: 'avatar', className: 'eva-status__pilotAvatar' }),
-            h('b', null, 'PILOT ' + pilot.no),
-            h('i', { className: 'eva-status__heart' }, '♥')),
-          h('span', { className: 'eva-status__metric' }, 'SYNC',
-            h('b', null, berserk ? '412.0%' : '100.0%'),
-            h('span', { className: 'eva-status__bars' },
-              [0, 1, 2, 3, 4, 5, 6, 7].map((index) => h('i', { key: index })))),
-          h('span', { className: 'eva-status__metric eva-status__metric--wide' }, 'MAGI',
-            h('b', null, berserk ? 'FAILED' : 'NOMINAL')),
-          h('span', {
-            className: 'eva-status__metric eva-status__metric--wide eva-status__power',
-            'data-low': power.low ? '1' : '0',
-          }, 'POWER',
-            h('b', null, berserk ? 'OVERLOAD' : (power.known ? Math.round(power.pct) + '%' : '--')),
-            h('span', { className: 'eva-status__battery', 'aria-hidden': true },
-              [0, 1, 2, 3, 4].map((index) =>
-                h('i', {
-                  key: index,
-                  'data-on': power.known && power.pct >= (index + 1) * 20 ? '1' : '0',
-                })))),
-          h('span', { className: 'eva-status__metric eva-status__metric--wide' }, 'A.T. FIELD',
-            h('b', null, berserk ? 'COLLAPSED' : '0.00')),
-          h('span', { className: 'eva-status__metric eva-status__metric--wide' }, 'LCL',
-            h('b', null, berserk ? 'LEAK' : '0.00')),
           h('span', { className: 'eva-status__grow' }),
-          h(Art, { name: 'waveform', className: 'eva-status__wave' }),
           h('span', { className: 'eva-status__clock' }, clockText(clock)),
           h('span', { className: 'eva-status__cycle' }, 'CYCLE 0001'),
           h('span', { className: 'eva-status__hazard' })),
@@ -2114,7 +2284,6 @@ window.__ModuleLoader__.load({
         });
 
         ctx.slots.inject('shell.bottom', replaceSingle('shell.bottom', StatusBar));
-        ctx.slots.inject('conversation.header.leading', replaceSingle('conversation.header.leading', HeaderTag));
 
         ctx.slots.inject('sidebar.brand.mark', replaceSingle('sidebar.brand.mark', BrandMark));
         ctx.slots.inject('sidebar.brand.name', replaceSingle('sidebar.brand.name', BrandName));
@@ -2122,15 +2291,6 @@ window.__ModuleLoader__.load({
           'conversation.hero.brand.mark',
           replaceSingle('conversation.hero.brand.mark', HeroMark),
         );
-
-        ctx.slots.inject('conversation.input.dock', () => {
-          const desk = ctx.slots.register({ name: 'conversation.input.dock', id: 'eva-01-desk', order: 39 }, Workbench);
-          const rail = ctx.slots.register({ name: 'conversation.input.dock', id: 'eva-01-rail', order: 40 }, ComposerRail);
-          return () => {
-            desk();
-            rail();
-          };
-        });
 
         ctx.slots.inject('sidebar.footer.action', () =>
           ctx.slots.register({ name: 'sidebar.footer.action', id: 'eva-01-controls', order: 40 }, FooterActions));

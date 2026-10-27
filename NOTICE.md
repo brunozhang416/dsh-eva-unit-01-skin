@@ -43,6 +43,12 @@ from a poster reference image supplied by the project owner, used for the
 included at the owner's request and is not covered by this repository's MIT
 license.
 
+
+`assets/berserk-00.png` is the LILITH-on-the-cross artwork supplied by the
+project owner; the black card background was removed with the system
+foreground-mask API and the red cross was retained. It is included at the
+owner's request and is not covered by this repository's MIT license.
+
 ## Music, voice and the rest
 
 All music and sound effects are synthesised at runtime by `src/audio.js` from an

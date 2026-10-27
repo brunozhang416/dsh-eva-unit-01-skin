@@ -22,6 +22,7 @@ const ASSET_FILES = new Map([
   ['berserk-01.png', 'image/png'],
   ['berserk-02.png', 'image/png'],
   ['berserk-02-red.png', 'image/png'],
+  ['berserk-00.png', 'image/png'],
   ['angel-ascend.png', 'image/png'],
 ]);
 const ASSET_ROOT = new URL('./assets/', import.meta.url);

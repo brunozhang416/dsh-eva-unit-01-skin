@@ -6344,3 +6344,9 @@ body:has([data-collapsed="true"]) .eva-foot__btn::after {
 @media (prefers-reduced-motion: reduce) {
   .eva-gate[data-picked="0"] .eva-gate__plug .eva-plug-roll { animation: none; }
 }
+
+/* Unit-00 berserk: LILITH on the cross */
+.eva-berserk-art[data-unit="rei"] {
+  right: 2vw;
+  height: min(80vh, 1020px);
+}

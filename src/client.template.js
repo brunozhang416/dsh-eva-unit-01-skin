@@ -1202,12 +1202,12 @@ window.__ModuleLoader__.load({
     function BerserkArt(props) {
       const unit = props.unit;
       if (!unit) return null;
-      const file = unit === 'asuka' ? 'berserk-02-red.png' : 'berserk-01.png';
+      const file = unit === 'asuka' ? 'berserk-02-red.png' : unit === 'rei' ? 'berserk-00.png' : 'berserk-01.png';
       return h('div', { className: 'eva-berserk-art', 'data-unit': unit, 'aria-hidden': true },
         h('img', { src: assetUrl(file), alt: '' }),
         h('span', { className: 'eva-berserk-art__scan' }),
         h('span', { className: 'eva-berserk-art__label' },
-          'BERSERK / 暴走 · ' + (unit === 'asuka' ? 'UNIT-02' : 'UNIT-01')));
+          'BERSERK / 暴走 · ' + (unit === 'asuka' ? 'UNIT-02' : unit === 'rei' ? 'UNIT-00' : 'UNIT-01')));
     }
 
     /* Floating "switch pilot" control above the sidebar's new-conversation
@@ -1754,7 +1754,7 @@ window.__ModuleLoader__.load({
           audio.sfx('alarm');
           sayLine('berserk_on');
           const unitKey = pilotSignal.get();
-          if (unitKey === 'shinji' || unitKey === 'asuka') {
+          if (unitKey === 'shinji' || unitKey === 'asuka' || unitKey === 'rei') {
             setBerserkArt(unitKey);
             clearTimeout(artTimer.current);
             artTimer.current = setTimeout(() => setBerserkArt(null), 4300);

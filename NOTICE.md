@@ -21,6 +21,12 @@ berserk illustrations supplied by the project owner; backgrounds were removed
 with the system foreground-mask API. They are included at the owner's request
 and are not covered by this repository's MIT license.
 
+
+`assets/berserk-02-red.png` is the new Unit-02 berserk artwork supplied by the
+project owner; the black background and typography were removed with the
+system foreground-mask API. It is included at the owner's request and is not
+covered by this repository's MIT license.
+
 `assets/avatar-shinji.png`, `assets/portrait-shinji.png`,
 `assets/avatar-asuka.png`, `assets/portrait-asuka.png`,
 `assets/avatar-rei.png` and `assets/portrait-rei.png` are crops / transparent

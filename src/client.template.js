@@ -1202,7 +1202,7 @@ window.__ModuleLoader__.load({
     function BerserkArt(props) {
       const unit = props.unit;
       if (!unit) return null;
-      const file = unit === 'asuka' ? 'berserk-02.png' : 'berserk-01.png';
+      const file = unit === 'asuka' ? 'berserk-02-red.png' : 'berserk-01.png';
       return h('div', { className: 'eva-berserk-art', 'data-unit': unit, 'aria-hidden': true },
         h('img', { src: assetUrl(file), alt: '' }),
         h('span', { className: 'eva-berserk-art__scan' }),

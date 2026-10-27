@@ -5267,7 +5267,7 @@ body[data-eva-pilot="00"] .eva-gate__bg {
 }
 .eva-berserk-art[data-unit="asuka"] {
   right: 3vw;
-  height: min(66vh, 820px);
+  height: min(74vh, 980px);
 }
 .eva-berserk-art img {
   height: 100%;

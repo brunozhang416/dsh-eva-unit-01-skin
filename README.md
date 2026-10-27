@@ -3,7 +3,7 @@
 把 **DeepSeek Harness Web GUI** 改成 EVA 启动控制台的皮肤插件（Cordis bundle，Host 提供余额/素材路由，Client 负责全部界面）。
 
 - 包名：`dsh-eva-unit-01-skin`
-- 当前版本：**v1.10.3（插入栓旋转）**
+- 当前版本：**v1.10.4（插入栓自转）**
 - 形态：Client 侧皮肤插件 + 只读 Host 路由（余额、驾驶员素材）
 - 适配：Harness Desktop / Web 客户端，深色与浅色两套宿主配色
 
@@ -51,7 +51,7 @@
 
 ### 插入栓与驾驶员选择动画
 
-- **插入栓可拖动旋转**：在选人页直接拖动左侧插入栓即可旋转，带惯性；双击插入栓复位；顶部显示 `ROT` 角度
+- **插入栓自动旋转**：选人页的左侧插入栓像参考项目一样自行缓慢旋转（18s 一圈，持续循环）；`prefers-reduced-motion` 下停止旋转
 
 参考 `seaison/dsh-plugin-eva-theme` 的插入栓选人流程重做：
 

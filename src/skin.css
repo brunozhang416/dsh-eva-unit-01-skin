@@ -6303,3 +6303,24 @@ body:has([data-collapsed="true"]) .eva-foot__btn::after {
   .eva-gate__plugHint,
   .eva-gate__plugRot { display: none; }
 }
+
+/* The entry plug rotates on its own, like the reference showcase. */
+.eva-gate__plug {
+  animation: eva-plug-auto-spin 18s linear infinite;
+  transform-origin: 50% 50%;
+  cursor: default;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes eva-plug-auto-spin {
+  from { transform: rotate(14deg); }
+  to { transform: rotate(374deg); }
+}
+.eva-gate__plugHint,
+.eva-gate__plugRot { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .eva-gate__plug {
+    animation: none;
+    transform: rotate(14deg);
+  }
+}

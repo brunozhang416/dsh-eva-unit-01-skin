@@ -979,11 +979,7 @@ window.__ModuleLoader__.load({
       const [changeMode, setChangeMode] = useState(false);
       const [sync, setSync] = useState(0);
       const [ready, setReady] = useState(false);
-      const [rotation, setRotation] = useState(0);
-      const [spinning, setSpinning] = useState(false);
       const started = useRef(false);
-      const plugDrag = useRef(null);
-      const plugSpin = useRef(0);
       const selectedMode = Boolean(props.preselect) && !changeMode;
 
       // Returning from the cockpit panel: preselect the clicked pilot and let
@@ -994,80 +990,6 @@ window.__ModuleLoader__.load({
         setPicked(true);
         choosePilot(props.preselect);
       }, []);
-
-      useEffect(() => () => {
-        if (plugSpin.current) cancelAnimationFrame(plugSpin.current);
-        plugSpin.current = 0;
-      }, []);
-
-      const stopSpin = () => {
-        if (plugSpin.current) cancelAnimationFrame(plugSpin.current);
-        plugSpin.current = 0;
-        setSpinning(false);
-      };
-
-      const startSpin = (velocity) => {
-        if (reduceMotion() || Math.abs(velocity) < 0.04) {
-          setSpinning(false);
-          return;
-        }
-        let speed = velocity;
-        setSpinning(true);
-        const step = () => {
-          speed *= 0.94;
-          setRotation((value) => value + speed);
-          if (Math.abs(speed) > 0.08) {
-            plugSpin.current = requestAnimationFrame(step);
-          } else {
-            plugSpin.current = 0;
-            setSpinning(false);
-          }
-        };
-        plugSpin.current = requestAnimationFrame(step);
-      };
-
-      const plugDown = (event) => {
-        if (event.button !== 0) return;
-        event.preventDefault();
-        event.stopPropagation();
-        stopSpin();
-        try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) { /* ignore */ }
-        plugDrag.current = {
-          id: event.pointerId,
-          x: event.clientX,
-          rotation,
-          lastX: event.clientX,
-          lastAt: performance.now(),
-          velocity: 0,
-        };
-        setSpinning(true);
-      };
-
-      const plugMove = (event) => {
-        const drag = plugDrag.current;
-        if (!drag || drag.id !== event.pointerId) return;
-        event.preventDefault();
-        const dx = event.clientX - drag.x;
-        const now = performance.now();
-        const elapsed = Math.max(8, now - drag.lastAt);
-        drag.velocity = (event.clientX - drag.lastX) / elapsed * 9;
-        drag.lastX = event.clientX;
-        drag.lastAt = now;
-        setRotation(drag.rotation + dx * 0.58);
-      };
-
-      const plugUp = (event) => {
-        const drag = plugDrag.current;
-        if (!drag || drag.id !== event.pointerId) return;
-        plugDrag.current = null;
-        try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (error) { /* ignore */ }
-        startSpin(drag.velocity);
-      };
-
-      const plugReset = () => {
-        stopSpin();
-        setRotation(0);
-      };
 
       const begin = (withSound) => {
         if (started.current || !picked || !ready) return;
@@ -1127,15 +1049,7 @@ window.__ModuleLoader__.load({
             h('span', { className: 'eva-gate__contours', 'aria-hidden': true }),
             h('div', {
               className: 'eva-gate__plug',
-              style: { '--plug-rotate': rotation.toFixed(2) + 'deg' },
-              'data-spinning': spinning ? '1' : '0',
-              title: '拖动旋转插入栓 / DRAG TO ROTATE',
-              'aria-label': '插入栓，拖动旋转',
-              onPointerDown: plugDown,
-              onPointerMove: plugMove,
-              onPointerUp: plugUp,
-              onPointerCancel: plugUp,
-              onDoubleClick: plugReset,
+              'aria-hidden': true,
             },
               h('img', {
                 className: 'eva-gate__plugImg',
@@ -1159,9 +1073,7 @@ window.__ModuleLoader__.load({
                       })),
                     h('span', { className: 'eva-gate__sync' }, sync + '%'),
                     h('span', { className: 'eva-gate__syncLabel' }, 'SYNC / 接続'))
-                : null),
-          h('span', { className: 'eva-gate__plugHint' }, '拖动旋转 / DRAG TO ROTATE'),
-          h('span', { className: 'eva-gate__plugRot' }, 'ROT ' + Math.round(((rotation % 360) + 360) % 360) + '°')),
+                : null)),
           h('div', { className: 'eva-gate__console' },
             h('span', { className: 'eva-gate__eyebrow' }, 'パイロット認証 / PILOT AUTHENTICATION'),
             h('span', { className: 'eva-gate__title' }, pilot.unitJp + ' 起動'),

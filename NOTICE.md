@@ -49,6 +49,17 @@ project owner; the black card background was removed with the system
 foreground-mask API and the red cross was retained. It is included at the
 owner's request and is not covered by this repository's MIT license.
 
+
+`assets/evangelion.mp3` is the launch-sequence BGM track supplied by the
+project owner. It is embedded in the client bundle at the owner's request and
+is not covered by this repository's MIT license. The intro Angel cue, system
+TTS and all SFX remain generated at runtime.
+
+
+`assets/decisive-battle.mp3` is the chat-page BGM track supplied by the
+project owner. It is embedded in the client bundle at the owner's request and
+is not covered by this repository's MIT license.
+
 ## Music, voice and the rest
 
 All music and sound effects are synthesised at runtime by `src/audio.js` from an

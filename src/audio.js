@@ -12,6 +12,9 @@
 function createEvaAudio() {
   'use strict';
   var W = typeof window !== 'undefined' ? window : null;
+  try {
+    if (W && W.speechSynthesis && typeof W.speechSynthesis.cancel === 'function') W.speechSynthesis.cancel();
+  } catch (error) { /* speech unavailable */ }
   var AudioCtor = W && (W.AudioContext || W.webkitAudioContext);
   var noop = function () {};
   /* No Web Audio: keep the API shape, stay silent. */
@@ -20,7 +23,7 @@ function createEvaAudio() {
       supported: false, unlock: function () { return Promise.resolve(false); },
       isUnlocked: function () { return false; }, setEnabled: noop, startBoot: noop,
       setPhase: noop, stopBoot: noop, setBerserk: noop, sfx: noop, setMuted: noop,
-      dispose: noop, speak: function () { return Promise.resolve(); },
+      dispose: noop, speak: function () { return Promise.resolve(); }, cancelSpeech: noop,
     };
   }
   var MASTER_LEVEL = 0.6, SCORE_FULL = 1, SCORE_IDLE = 0.32;
@@ -702,7 +705,7 @@ function createEvaAudio() {
   return {
     supported: true, unlock: unlock, isUnlocked: isUnlocked, setEnabled: setEnabled,
     startBoot: startBoot, setPhase: setPhase, stopBoot: stopBoot, setBerserk: setBerserk,
-    sfx: sfx, speak: speak, systemCue: systemCue, setMuted: function (on) { setEnabled(!on); }, dispose: dispose,
+    sfx: sfx, speak: speak, cancelSpeech: flushSpeech, systemCue: systemCue, setMuted: function (on) { setEnabled(!on); }, dispose: dispose,
     startAngel: startAngel, stopAngel: stopAngel,
   };
 }

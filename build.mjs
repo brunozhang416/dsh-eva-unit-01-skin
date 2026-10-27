@@ -16,6 +16,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const checkOnly = process.argv.includes('--check');
 
 const read = (relative) => readFileSync(join(root, relative), 'utf8');
+const dataUri = (relative, mime) => 'data:' + mime + ';base64,' + readFileSync(join(root, relative)).toString('base64');
 const optional = (relative, fallback) =>
   existsSync(join(root, relative)) ? readFileSync(join(root, relative), 'utf8') : fallback;
 
@@ -84,6 +85,10 @@ const generated = template
   .replace('__EVA_ART__', JSON.stringify(Object.fromEntries(
     Object.entries(art).map(([name, svg]) => [name, sanitize(svg)]),
   )))
+  .replace('__BERSERK_02_DATA__', dataUri('assets/berserk-02.webp', 'image/webp'))
+  .replace('__BERSERK_00_DATA__', dataUri('assets/berserk-00.webp', 'image/webp'))
+  .replace('__LAUNCH_BGM_DATA__', dataUri('assets/evangelion.mp3', 'audio/mpeg'))
+  .replace('__CHAT_BGM_DATA__', dataUri('assets/decisive-battle.mp3', 'audio/mpeg'))
   .replace('/* __EVA_AUDIO__ */', audioSource);
 
 const out = join(root, 'client.js');

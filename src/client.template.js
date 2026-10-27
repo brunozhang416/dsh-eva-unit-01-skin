@@ -22,6 +22,107 @@ window.__ModuleLoader__.load({
     const ASSET_VERSION = '1.5.2';
 
     const assetUrl = (file) => '/dsh-eva-unit-01/assets/' + file + '?v=' + ASSET_VERSION;
+    const BERSERK_ART = { asuka: '__BERSERK_02_DATA__', rei: '__BERSERK_00_DATA__' };
+    const LAUNCH_BGM_SRC = '__LAUNCH_BGM_DATA__';
+    const CHAT_BGM_SRC = '__CHAT_BGM_DATA__';
+    const launchBgm = { el: null, fade: 0 };
+    const chatBgm = { el: null, fade: 0 };
+
+    function startLaunchBgm() {
+      if (!readSound()) return;
+      try {
+        if (!launchBgm.el) {
+          launchBgm.el = new window.Audio(LAUNCH_BGM_SRC);
+          launchBgm.el.preload = 'auto';
+          launchBgm.el.loop = true;
+          launchBgm.el.volume = 0.55;
+        }
+        if (launchBgm.fade) {
+          cancelAnimationFrame(launchBgm.fade);
+          launchBgm.fade = 0;
+        }
+        launchBgm.el.volume = 0.55;
+        launchBgm.el.currentTime = 0;
+        const playing = launchBgm.el.play();
+        if (playing && typeof playing.catch === 'function') playing.catch(() => {});
+      } catch (error) {
+        /* audio unsupported or blocked */
+      }
+    }
+
+    function stopLaunchBgm(fadeMs) {
+      const el = launchBgm.el;
+      if (!el) return;
+      if (launchBgm.fade) {
+        cancelAnimationFrame(launchBgm.fade);
+        launchBgm.fade = 0;
+      }
+      if (!fadeMs) {
+        try { el.pause(); el.currentTime = 0; el.volume = 0.55; } catch (error) { /* ignore */ }
+        return;
+      }
+      const from = performance.now();
+      const initial = el.volume;
+      const step = (now) => {
+        const t = Math.min(1, (now - from) / fadeMs);
+        try { el.volume = initial * (1 - t); } catch (error) { /* ignore */ }
+        if (t < 1) {
+          launchBgm.fade = requestAnimationFrame(step);
+        } else {
+          launchBgm.fade = 0;
+          try { el.pause(); el.currentTime = 0; el.volume = 0.55; } catch (error) { /* ignore */ }
+        }
+      };
+      launchBgm.fade = requestAnimationFrame(step);
+    }
+
+    function startChatBgm() {
+      if (!readSound()) return;
+      try {
+        if (!chatBgm.el) {
+          chatBgm.el = new window.Audio(CHAT_BGM_SRC);
+          chatBgm.el.preload = 'auto';
+          chatBgm.el.loop = true;
+          chatBgm.el.volume = 0.32;
+        }
+        if (chatBgm.fade) {
+          cancelAnimationFrame(chatBgm.fade);
+          chatBgm.fade = 0;
+        }
+        chatBgm.el.volume = 0.32;
+        chatBgm.el.currentTime = 0;
+        const playing = chatBgm.el.play();
+        if (playing && typeof playing.catch === 'function') playing.catch(() => {});
+      } catch (error) {
+        /* audio unsupported or blocked */
+      }
+    }
+
+    function stopChatBgm(fadeMs) {
+      const el = chatBgm.el;
+      if (!el) return;
+      if (chatBgm.fade) {
+        cancelAnimationFrame(chatBgm.fade);
+        chatBgm.fade = 0;
+      }
+      if (!fadeMs) {
+        try { el.pause(); el.currentTime = 0; el.volume = 0.32; } catch (error) { /* ignore */ }
+        return;
+      }
+      const from = performance.now();
+      const initial = el.volume;
+      const step = (now) => {
+        const t = Math.min(1, (now - from) / fadeMs);
+        try { el.volume = initial * (1 - t); } catch (error) { /* ignore */ }
+        if (t < 1) {
+          chatBgm.fade = requestAnimationFrame(step);
+        } else {
+          chatBgm.fade = 0;
+          try { el.pause(); el.currentTime = 0; el.volume = 0.32; } catch (error) { /* ignore */ }
+        }
+      };
+      chatBgm.fade = requestAnimationFrame(step);
+    }
 
     function readFx() {
       try {
@@ -349,6 +450,7 @@ window.__ModuleLoader__.load({
         if (captionSeq === current) captionSignal.set(null);
       }, 4600);
       if (soundSignal.get()) {
+        audio.cancelSpeech();
         audio.speak(line.jp, {
           lang: 'ja-JP',
           rate: pilot.voice.rate,
@@ -373,6 +475,7 @@ window.__ModuleLoader__.load({
         if (captionSeq === current) captionSignal.set(null);
       }, 5200);
       if (soundSignal.get()) {
+        audio.cancelSpeech();
         audio.speak(line.jp, {
           lang: 'ja-JP',
           rate: pilot.voice.rate,
@@ -388,6 +491,7 @@ window.__ModuleLoader__.load({
       soundSignal.set(next);
       writeSound(next);
       audio.setEnabled(next);
+      if (!next) { stopLaunchBgm(0); stopChatBgm(0); }
       if (next) {
         audio.unlock().then((ok) => {
           if (ok) {
@@ -1202,9 +1306,9 @@ window.__ModuleLoader__.load({
     function BerserkArt(props) {
       const unit = props.unit;
       if (!unit) return null;
-      const file = unit === 'asuka' ? 'berserk-02-red.png' : unit === 'rei' ? 'berserk-00.png' : 'berserk-01.png';
+      const src = unit === 'asuka' ? BERSERK_ART.asuka : unit === 'rei' ? BERSERK_ART.rei : assetUrl('berserk-01.png');
       return h('div', { className: 'eva-berserk-art', 'data-unit': unit, 'aria-hidden': true },
-        h('img', { src: assetUrl(file), alt: '' }),
+        h('img', { src, alt: '' }),
         h('span', { className: 'eva-berserk-art__scan' }),
         h('span', { className: 'eva-berserk-art__label' },
           'BERSERK / 暴走 · ' + (unit === 'asuka' ? 'UNIT-02' : unit === 'rei' ? 'UNIT-00' : 'UNIT-01')));
@@ -1683,6 +1787,7 @@ window.__ModuleLoader__.load({
           audio.setEnabled(true);
         }
         if (withSound) {
+          startLaunchBgm();
           audio.unlock().then((ok) => {
             if (ok) {
               audio.setEnabled(true);
@@ -1696,6 +1801,7 @@ window.__ModuleLoader__.load({
       };
 
       useEffect(() => launchSignal.subscribe(() => {
+        startLaunchBgm();
         setAlarm(false);
         setGate(false);
         if (soundRef.current) audio.unlock();
@@ -1711,6 +1817,7 @@ window.__ModuleLoader__.load({
       }, []);
 
       useEffect(() => pilotSwitchSignal.subscribe(() => {
+        stopLaunchBgm(0);
         setAlarm(false);
         setGate(true);
         setRun(-1);
@@ -1775,11 +1882,18 @@ window.__ModuleLoader__.load({
       const playing = run !== -1 && finished !== run;
       const bursting = burstRun > burstDone;
 
+      useEffect(() => {
+        if (!alarm && !gate && !playing && sound) {
+          startChatBgm();
+        } else {
+          stopChatBgm(300);
+        }
+      }, [alarm, gate, playing, sound]);
+
       const handleScene = (id) => {
         if (!soundRef.current) return;
         audio.setPhase(id);
         if (id === 'boot') {
-          audio.startBoot();
           sayLine('boot');
         }
         if (id === 'pilot') {
@@ -1811,6 +1925,7 @@ window.__ModuleLoader__.load({
 
       const finishLaunch = (index) => {
         setFinished(index);
+        stopLaunchBgm(600);
         audio.stopBoot();
         audio.setPhase(soundRef.current ? 'idle' : 'idle');
         sayLine('welcome');
@@ -1911,7 +2026,7 @@ window.__ModuleLoader__.load({
           title: '启动 / REPLAY',
           'aria-label': '启动',
           'data-tip': '启动',
-          onClick: () => launchSignal.set(launchSignal.get() + 1),
+          onClick: () => { if (soundSignal.get()) startLaunchBgm(); launchSignal.set(launchSignal.get() + 1); },
         },
           h('span', { className: 'eva-foot__glyph', 'aria-hidden': true }, '▶'),
           h('span', { className: 'eva-foot__label' }, '启动')),

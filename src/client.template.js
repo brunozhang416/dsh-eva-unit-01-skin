@@ -26,12 +26,40 @@ window.__ModuleLoader__.load({
     const LAUNCH_BGM_SRC = '__LAUNCH_BGM_DATA__';
     const CHAT_BGM_SRC = '__CHAT_BGM_DATA__';
     const ASUKA_SCREAM_SRC = '__ASUKA_SCREAM_DATA__';
+    const BGM_REGISTRY = (() => {
+      try {
+        if (!window.__evaBgmElements) window.__evaBgmElements = new Set();
+        if (!window.__evaAudioHooked) {
+          const Original = window.Audio;
+          if (typeof Original === 'function') {
+            const Wrapped = function (...args) {
+              const element = new Original(...args);
+              window.__evaBgmElements.add(element);
+              return element;
+            };
+            Wrapped.prototype = Original.prototype;
+            window.Audio = Wrapped;
+            window.__evaAudioHooked = true;
+          }
+        }
+        return window.__evaBgmElements;
+      } catch (error) {
+        return new Set();
+      }
+    })();
+
+    function registerBgm(element) {
+      if (element) BGM_REGISTRY.add(element);
+      return element;
+    }
     const launchBgm = { el: null, fade: 0 };
     const chatBgm = { el: null, fade: 0, allowed: false };
     const berserkClip = { el: null, timer: 0, resumeChat: false };
 
     function startLaunchBgm() {
       if (!readSound()) return;
+      stopChatBgm(0);
+      stopBerserkClip(false);
       try {
         if (!launchBgm.el) {
           launchBgm.el = new window.Audio(LAUNCH_BGM_SRC);
@@ -80,6 +108,8 @@ window.__ModuleLoader__.load({
 
     function startChatBgm() {
       if (!readSound()) return;
+      stopLaunchBgm(0);
+      stopBerserkClip(false);
       try {
         if (!chatBgm.el) {
           chatBgm.el = new window.Audio(CHAT_BGM_SRC);
@@ -130,6 +160,7 @@ window.__ModuleLoader__.load({
       if (!readSound()) return;
       const src = unit === '02' ? ASUKA_SCREAM_SRC : unit === '01' ? CHAT_BGM_SRC : '';
       if (!src) return;
+      stopLaunchBgm(0);
       stopBerserkClip(false);
       berserkClip.resumeChat = Boolean(chatBgm.el && !chatBgm.el.paused);
       if (berserkClip.resumeChat) stopChatBgm(0);
@@ -160,6 +191,15 @@ window.__ModuleLoader__.load({
       const shouldResume = Boolean(resume && berserkClip.resumeChat && chatBgm.allowed && readSound());
       berserkClip.resumeChat = false;
       if (shouldResume) startChatBgm();
+    }
+
+    function stopAllBgm() {
+      stopLaunchBgm(0);
+      stopChatBgm(0);
+      stopBerserkClip(false);
+      BGM_REGISTRY.forEach((element) => {
+        try { element.pause(); element.currentTime = 0; } catch (error) { /* ignore */ }
+      });
     }
 
     function readFx() {
@@ -529,7 +569,12 @@ window.__ModuleLoader__.load({
       soundSignal.set(next);
       writeSound(next);
       audio.setEnabled(next);
-      if (!next) { stopLaunchBgm(0); stopChatBgm(0); stopBerserkClip(false); }
+      if (!next) {
+        stopAllBgm();
+        audio.stopAngel();
+        audio.stopBoot();
+        audio.cancelSpeech();
+      }
       if (next) {
         audio.unlock().then((ok) => {
           if (ok) {
@@ -1857,6 +1902,7 @@ window.__ModuleLoader__.load({
 
       useEffect(() => pilotSwitchSignal.subscribe(() => {
         stopLaunchBgm(0);
+        stopChatBgm(0);
         stopBerserkClip(false);
         setAlarm(false);
         setGate(true);
@@ -1929,7 +1975,7 @@ window.__ModuleLoader__.load({
         if (chatBgm.allowed) {
           startChatBgm();
         } else {
-          stopChatBgm(300);
+          stopChatBgm(0);
         }
       }, [alarm, gate, playing, sound]);
 
@@ -1968,7 +2014,7 @@ window.__ModuleLoader__.load({
 
       const finishLaunch = (index) => {
         setFinished(index);
-        stopLaunchBgm(600);
+        stopLaunchBgm(0);
         audio.stopBoot();
         audio.setPhase(soundRef.current ? 'idle' : 'idle');
         sayLine('welcome');

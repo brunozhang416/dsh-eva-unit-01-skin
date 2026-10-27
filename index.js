@@ -25,6 +25,7 @@ const ASSET_FILES = new Map([
   ['berserk-00.png', 'image/png'],
   ['evangelion.mp3', 'audio/mpeg'],
   ['decisive-battle.mp3', 'audio/mpeg'],
+  ['asuka-scream.mp3', 'audio/mpeg'],
   ['angel-ascend.png', 'image/png'],
 ]);
 const ASSET_ROOT = new URL('./assets/', import.meta.url);

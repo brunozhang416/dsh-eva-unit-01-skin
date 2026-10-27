@@ -89,6 +89,7 @@ const generated = template
   .replace('__BERSERK_00_DATA__', dataUri('assets/berserk-00.webp', 'image/webp'))
   .replace('__LAUNCH_BGM_DATA__', dataUri('assets/evangelion.mp3', 'audio/mpeg'))
   .replace('__CHAT_BGM_DATA__', dataUri('assets/decisive-battle.mp3', 'audio/mpeg'))
+  .replace('__ASUKA_SCREAM_DATA__', dataUri('assets/asuka-scream.mp3', 'audio/mpeg'))
   .replace('/* __EVA_AUDIO__ */', audioSource);
 
 const out = join(root, 'client.js');

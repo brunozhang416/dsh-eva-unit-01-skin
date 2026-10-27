@@ -6216,3 +6216,58 @@ body:has([data-collapsed="true"]) .eva-canopy { left: 56px; }
 body[data-eva-pilot="01"] .eva-cp__portrait img { object-position: 50% 28%; }
 body[data-eva-pilot="02"] .eva-cp__portrait img { object-position: 50% 30%; }
 body[data-eva-pilot="00"] .eva-cp__portrait img { object-position: 50% 68%; }
+
+/* footer controls: horizontal glyph + Chinese label, icon-only when rail folds */
+.eva-foot {
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: visible;
+}
+.eva-foot__btn {
+  position: relative;
+  flex: 0 0 auto;
+  flex-direction: row;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+}
+.eva-foot__glyph,
+.eva-foot__label {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+}
+.eva-foot__btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 120;
+  transform: translateX(-50%) translateY(2px);
+  padding: 4px 7px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 2px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  font-family: var(--eva-font-hud);
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.12s, transform 0.12s, visibility 0.12s;
+}
+.eva-foot__btn:hover::after,
+.eva-foot__btn:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+body:has([data-collapsed="true"]) .eva-foot {
+  overflow: visible;
+}
+body:has([data-collapsed="true"]) .eva-foot__btn::after {
+  font-size: 7px;
+}

@@ -1902,60 +1902,64 @@ window.__ModuleLoader__.load({
       const fx = useSignal(fxSignal);
       const berserk = useSignal(berserkSignal);
       const sound = useSignal(soundSignal);
-      const wide = Boolean(props && props.wide);
       const next = fx === 'full' ? 'lite' : fx === 'lite' ? 'off' : 'full';
       const glyph = fx === 'full' ? '◈' : fx === 'lite' ? '◇' : '○';
       return h('div', { className: 'eva-foot' },
         h('button', {
           type: 'button',
           className: 'eva-foot__btn',
-          title: t('replay'),
-          'aria-label': t('replay'),
+          title: '启动 / REPLAY',
+          'aria-label': '启动',
+          'data-tip': '启动',
           onClick: () => launchSignal.set(launchSignal.get() + 1),
         },
           h('span', { className: 'eva-foot__glyph', 'aria-hidden': true }, '▶'),
-          wide ? h('span', { className: 'eva-foot__label' }, '起動') : null),
+          h('span', { className: 'eva-foot__label' }, '启动')),
         h('button', {
           type: 'button',
           className: 'eva-foot__btn',
           'data-fx': fx,
-          title: t('fx'),
-          'aria-label': t('fx'),
+          title: '界面强度 / HUD INTENSITY',
+          'aria-label': '界面强度',
+          'data-tip': '界面强度',
           onClick: () => setFx(next),
         },
           h('span', { className: 'eva-foot__glyph', 'aria-hidden': true }, glyph),
-          wide ? h('span', { className: 'eva-foot__label' }, 'HUD') : null),
+          h('span', { className: 'eva-foot__label' }, '界面')),
         h('button', {
           type: 'button',
           className: 'eva-foot__btn',
-          title: t('mode'),
-          'aria-label': t('mode'),
+          title: '明暗模式 / MODE',
+          'aria-label': '明暗模式',
+          'data-tip': '明暗模式',
           onClick: () => themeMode(),
         },
           h('span', { className: 'eva-foot__glyph', 'aria-hidden': true }, '◐'),
-          wide ? h('span', { className: 'eva-foot__label' }, 'MODE') : null),
+          h('span', { className: 'eva-foot__label' }, '明暗')),
         h('button', {
           type: 'button',
           className: 'eva-foot__btn',
           'data-sound': sound ? '1' : '0',
           'aria-pressed': sound,
-          title: t('soundTitle'),
-          'aria-label': t('soundTitle'),
+          title: '声音 / SOUND',
+          'aria-label': '声音',
+          'data-tip': '声音',
           onClick: () => toggleSound(),
         },
           h('span', { className: 'eva-foot__glyph', 'aria-hidden': true }, sound ? '♪' : '∅'),
-          wide ? h('span', { className: 'eva-foot__label' }, t('sound')) : null),
+          h('span', { className: 'eva-foot__label' }, '声音')),
         h('button', {
           type: 'button',
           className: 'eva-foot__btn',
           'data-berserk': berserk ? '1' : '0',
           'aria-pressed': berserk,
-          title: t('berserkTitle'),
-          'aria-label': t('berserkTitle'),
+          title: '暴走 / BERSERK',
+          'aria-label': '暴走',
+          'data-tip': '暴走',
           onClick: () => toggleBerserk(),
         },
           h('span', { className: 'eva-foot__glyph', 'aria-hidden': true }, '⚠'),
-          wide ? h('span', { className: 'eva-foot__label' }, t('berserk')) : null));
+          h('span', { className: 'eva-foot__label' }, '暴走')));
     }
 
     /* ------------------------------------------------------------------ *
@@ -2186,7 +2190,35 @@ window.__ModuleLoader__.load({
         if (theme) {
           themeMode = () => {
             const dark = document.body.hasAttribute('data-ds-dark-theme');
-            theme.setTheme(dark ? 'light' : 'dark');
+            const target = dark ? 'light' : 'dark';
+            try {
+              const snapshot = typeof theme.getTheme === 'function' ? theme.getTheme() : null;
+              const ids = snapshot && Array.isArray(snapshot.themes)
+                ? snapshot.themes.map((item) => item && item.id).filter(Boolean)
+                : [];
+              if (!ids.length || ids.includes(target)) {
+                theme.setTheme(target);
+                return;
+              }
+            } catch (error) {
+              /* fall through to the DOM fallback */
+            }
+            try {
+              document.body.toggleAttribute('data-ds-dark-theme', !dark);
+              document.documentElement.style.colorScheme = dark ? 'light' : 'dark';
+            } catch (error) {
+              /* nothing else to do */
+            }
+          };
+        } else {
+          themeMode = () => {
+            try {
+              const dark = document.body.hasAttribute('data-ds-dark-theme');
+              document.body.toggleAttribute('data-ds-dark-theme', !dark);
+              document.documentElement.style.colorScheme = dark ? 'light' : 'dark';
+            } catch (error) {
+              /* document unavailable */
+            }
           };
         }
 

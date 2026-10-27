@@ -6271,3 +6271,35 @@ body:has([data-collapsed="true"]) .eva-foot {
 body:has([data-collapsed="true"]) .eva-foot__btn::after {
   font-size: 7px;
 }
+
+/* entry-plug rotation interaction */
+.eva-gate__plug {
+  --plug-rotate: 0deg;
+  transform: rotate(calc(14deg + var(--plug-rotate)));
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  will-change: transform;
+}
+.eva-gate__plug[data-spinning="1"] { cursor: grabbing; }
+.eva-gate__plug:active { cursor: grabbing; }
+.eva-gate__plugHint,
+.eva-gate__plugRot {
+  position: absolute;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  pointer-events: none;
+  font-family: var(--eva-font-hud);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  color: rgba(255, 179, 71, 0.62);
+}
+.eva-gate__plugHint { bottom: 3%; }
+.eva-gate__plugRot { top: 3%; color: rgba(255, 179, 71, 0.4); }
+.eva-gate__plug[data-spinning="1"] .eva-gate__plugHint { color: rgba(255, 179, 71, 0.95); }
+@media (max-width: 900px) {
+  .eva-gate__plugHint,
+  .eva-gate__plugRot { display: none; }
+}

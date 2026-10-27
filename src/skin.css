@@ -6304,23 +6304,43 @@ body:has([data-collapsed="true"]) .eva-foot__btn::after {
   .eva-gate__plugRot { display: none; }
 }
 
-/* The entry plug rotates on its own, like the reference showcase. */
+/* Entry plug: surface markings roll around its long axis (left/right),
+   matching the reference showcase; the shell/silhouette stays fixed. */
 .eva-gate__plug {
-  animation: eva-plug-auto-spin 18s linear infinite;
+  transform: rotate(14deg);
   transform-origin: 50% 50%;
-  cursor: default;
   pointer-events: none;
-  will-change: transform;
 }
-@keyframes eva-plug-auto-spin {
-  from { transform: rotate(14deg); }
-  to { transform: rotate(374deg); }
+.eva-gate__plugImg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
-.eva-gate__plugHint,
-.eva-gate__plugRot { display: none !important; }
+.eva-gate__plugImg svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.eva-gate__plug .eva-plug-roll {
+  transform-box: view-box;
+  transform-origin: 200px 400px;
+}
+.eva-gate__plug .eva-plug-roll-back { opacity: 0; }
+.eva-gate[data-picked="0"] .eva-gate__plug .eva-plug-roll {
+  animation: eva-plug-roll 10s linear infinite;
+}
+.eva-gate[data-picked="0"] .eva-gate__plug .eva-plug-roll-back {
+  animation-delay: -5s;
+}
+@keyframes eva-plug-roll {
+  0%, 100% { transform: translateX(0) scaleX(1); opacity: 1; }
+  12.5% { transform: translateX(45px) scaleX(0.707); opacity: 1; }
+  24.9% { transform: translateX(64px) scaleX(0.006); opacity: 0; }
+  25%, 74.9% { transform: translateX(64px) scaleX(0); opacity: 0; }
+  75% { transform: translateX(-64px) scaleX(0); opacity: 0; }
+  87.5% { transform: translateX(-45px) scaleX(0.707); opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .eva-gate__plug {
-    animation: none;
-    transform: rotate(14deg);
-  }
+  .eva-gate[data-picked="0"] .eva-gate__plug .eva-plug-roll { animation: none; }
 }

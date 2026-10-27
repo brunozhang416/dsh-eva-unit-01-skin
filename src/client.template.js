@@ -1030,6 +1030,7 @@ window.__ModuleLoader__.load({
 
       return h('div', {
         className: 'eva-gate',
+        'data-picked': picked ? '1' : '0',
         role: 'presentation',
       },
         h('div', { className: 'eva-gate__bg' }),
@@ -1051,11 +1052,7 @@ window.__ModuleLoader__.load({
               className: 'eva-gate__plug',
               'aria-hidden': true,
             },
-              h('img', {
-                className: 'eva-gate__plugImg',
-                src: assetUrl('entry-plug.svg'),
-                alt: '',
-              }),
+              h(Art, { name: 'entryPlug', className: 'eva-gate__plugImg' }),
               h('span', { className: 'eva-gate__plugGlow' }),
 
               h('span', { className: 'eva-gate__plugTag eva-gate__plugTag--top' }, 'ENTRY PLUG / 挿入栓'),

@@ -39,6 +39,7 @@ const art = {
   head00: optional('art/head-00.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#7FC4E8"/></svg>'),
   atField: optional('art/at-field.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><circle cx="120" cy="120" r="90" fill="none" stroke="currentColor"/></svg>'),
   a10Clip: optional('art/a10-clip.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="8" fill="currentColor"/></svg>'),
+  entryPlug: optional('assets/entry-plug.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 800"></svg>'),
 };
 
 // The artwork must stay embeddable as an HTML string: strip anything that

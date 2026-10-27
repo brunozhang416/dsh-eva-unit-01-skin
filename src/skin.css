@@ -6328,10 +6328,10 @@ body:has([data-collapsed="true"]) .eva-foot__btn::after {
 }
 .eva-gate__plug .eva-plug-roll-back { opacity: 0; }
 .eva-gate[data-picked="0"] .eva-gate__plug .eva-plug-roll {
-  animation: eva-plug-roll 10s linear infinite;
+  animation: eva-plug-roll 6s linear infinite;
 }
 .eva-gate[data-picked="0"] .eva-gate__plug .eva-plug-roll-back {
-  animation-delay: -5s;
+  animation-delay: -3s;
 }
 @keyframes eva-plug-roll {
   0%, 100% { transform: translateX(0) scaleX(1); opacity: 1; }

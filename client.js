@@ -1227,6 +1227,38 @@ function createEvaAudio() {
 
     let captionSeq = 0;
     let captionTimer = 0;
+    let voiceTimer = 0;
+
+    /* Speech engines (especially Chromium/macOS) can swallow an utterance when
+     * synth.cancel() and synth.speak() are called in the same tick.  Cancel
+     * the previous line, then queue the new one on the next short tick. */
+    function speakPilotLine(pilot, line) {
+      if (!soundSignal.get()) return;
+      if (voiceTimer) {
+        clearTimeout(voiceTimer);
+        voiceTimer = 0;
+      }
+      try {
+        if (typeof audio.cancelSpeech === 'function') audio.cancelSpeech();
+      } catch (error) {
+        /* speech unavailable */
+      }
+      voiceTimer = setTimeout(() => {
+        voiceTimer = 0;
+        if (!soundSignal.get()) return;
+        try {
+          audio.speak(line.jp, {
+            lang: 'ja-JP',
+            rate: pilot.voice.rate,
+            pitch: pilot.voice.pitch,
+            volume: pilot.voice.volume,
+            voice: pilot.voice.prefer,
+          });
+        } catch (error) {
+          /* speech unavailable */
+        }
+      }, 140);
+    }
 
     function sayLine(key) {
       const pilot = currentPilot();
@@ -1239,16 +1271,7 @@ function createEvaAudio() {
       captionTimer = setTimeout(() => {
         if (captionSeq === current) captionSignal.set(null);
       }, 4600);
-      if (soundSignal.get()) {
-        audio.cancelSpeech();
-        audio.speak(line.jp, {
-          lang: 'ja-JP',
-          rate: pilot.voice.rate,
-          pitch: pilot.voice.pitch,
-          volume: pilot.voice.volume,
-          voice: pilot.voice.prefer,
-        });
-      }
+      speakPilotLine(pilot, line);
     }
 
     // Pilot self-introduction played when a card is picked (and when the
@@ -1264,16 +1287,7 @@ function createEvaAudio() {
       captionTimer = setTimeout(() => {
         if (captionSeq === current) captionSignal.set(null);
       }, 5200);
-      if (soundSignal.get()) {
-        audio.cancelSpeech();
-        audio.speak(line.jp, {
-          lang: 'ja-JP',
-          rate: pilot.voice.rate,
-          pitch: pilot.voice.pitch,
-          volume: pilot.voice.volume,
-          voice: pilot.voice.prefer,
-        });
-      }
+      speakPilotLine(pilot, line);
     }
 
     function toggleSound() {

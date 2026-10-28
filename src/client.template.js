@@ -26,7 +26,7 @@ window.__ModuleLoader__.load({
     const LAUNCH_BGM_SRC = '__LAUNCH_BGM_DATA__';
     const CHAT_BGM_SRC = '__CHAT_BGM_DATA__';
     const ASUKA_SCREAM_SRC = '__ASUKA_SCREAM_DATA__';
-    const UNIT01_BERSERK_SRC = '__UNIT01_BERSERK_DATA__';
+    const SHINJI_SCREAM_SRC = '__SHINJI_SCREAM_DATA__';
     const BGM_REGISTRY = (() => {
       try {
         if (!window.__evaBgmElements) window.__evaBgmElements = new Set();
@@ -159,7 +159,7 @@ window.__ModuleLoader__.load({
 
     function startBerserkClip(unit) {
       if (!readSound()) return;
-      const src = unit === '02' ? ASUKA_SCREAM_SRC : unit === '01' ? UNIT01_BERSERK_SRC : '';
+      const src = unit === '02' ? ASUKA_SCREAM_SRC : unit === '01' ? SHINJI_SCREAM_SRC : '';
       if (!src) return;
       stopLaunchBgm(0);
       stopBerserkClip(false);

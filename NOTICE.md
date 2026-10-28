@@ -70,6 +70,11 @@ covered by this repository's MIT license.
 `decisive-battle.mp3` for the Unit-01 berserk cue. It is embedded at the
 owner's request and is not covered by this repository's MIT license.
 
+
+`assets/shinji-scream.mp3` is the Unit-01 berserk clip supplied by the project
+owner. It is embedded in the client bundle at the owner's request and is not
+covered by this repository's MIT license.
+
 ## Music, voice and the rest
 
 All music and sound effects are synthesised at runtime by `src/audio.js` from an

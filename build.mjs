@@ -90,7 +90,7 @@ const generated = template
   .replace('__LAUNCH_BGM_DATA__', dataUri('assets/evangelion.mp3', 'audio/mpeg'))
   .replace('__CHAT_BGM_DATA__', dataUri('assets/decisive-battle.mp3', 'audio/mpeg'))
   .replace('__ASUKA_SCREAM_DATA__', dataUri('assets/asuka-scream.mp3', 'audio/mpeg'))
-  .replace('__UNIT01_BERSERK_DATA__', dataUri('assets/unit01-berserk.mp3', 'audio/mpeg'))
+  .replace('__SHINJI_SCREAM_DATA__', dataUri('assets/shinji-scream.mp3', 'audio/mpeg'))
   .replace('/* __EVA_AUDIO__ */', audioSource);
 
 const out = join(root, 'client.js');

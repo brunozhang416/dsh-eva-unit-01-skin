@@ -6350,3 +6350,262 @@ body:has([data-collapsed="true"]) .eva-foot__btn::after {
   right: 2vw;
   height: min(80vh, 1020px);
 }
+
+/* =====================================================================
+   LIGHT HANGAR REFINEMENTS
+   The light scheme used to collapse into a flat near-white sheet.  Give it
+   a slightly tinted paper base, readable bezel/glass depth and a violet
+   scan sweep so it still feels like an EVA display.
+   ===================================================================== */
+body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #e9e2f2;
+  --dsw-alias-bg-layer-1: #f5f0fb;
+  --dsw-alias-bg-layer-2: #fcfaff;
+  --dsw-specific-sidebar-fill: #e4daef;
+  --dsw-alias-border-l1: #d0c2e5;
+  background-color: #e9e2f2;
+  background-image:
+    radial-gradient(1250px 760px at 16% -18%, rgba(106, 31, 168, 0.15), transparent 64%),
+    radial-gradient(900px 620px at 94% 116%, rgba(47, 95, 224, 0.07), transparent 66%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent 38%),
+    repeating-linear-gradient(0deg, rgba(75, 29, 122, 0.04) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(75, 29, 122, 0.04) 0 1px, transparent 1px 46px);
+}
+
+body:not([data-ds-dark-theme]) [class*="_sidebarCol"] {
+  background-color: #e4daef !important;
+  background-image:
+    radial-gradient(120% 52% at 0% 0%, rgba(106, 31, 168, 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent 32%),
+    linear-gradient(180deg, rgba(106, 31, 168, 0.025), transparent) !important;
+}
+
+body:not([data-ds-dark-theme]) header[class*="_header"] {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)) !important;
+  border-bottom-color: rgba(106, 31, 168, 0.18) !important;
+}
+
+/* subtle cockpit glass around the transcript */
+body:not([data-ds-dark-theme]) [class*="ST7X_W_root"]::before {
+  border-color: rgba(106, 31, 168, 0.22);
+  opacity: 0.36;
+}
+body:not([data-ds-dark-theme]) [class*="ST7X_W_body"] {
+  border-left-color: rgba(106, 31, 168, 0.14);
+  border-right-color: rgba(106, 31, 168, 0.14);
+  background:
+    linear-gradient(90deg, rgba(106, 31, 168, 0.045), transparent 13%, transparent 87%, rgba(106, 31, 168, 0.045)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), transparent 38%);
+}
+body:not([data-ds-dark-theme]) [class*="ST7X_W_scrollBody"] {
+  background-image:
+    radial-gradient(82% 52% at 50% 0%, rgba(255, 255, 255, 0.62), transparent 68%),
+    radial-gradient(74% 48% at 50% 112%, rgba(106, 31, 168, 0.055), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(75, 29, 122, 0.032) 0 1px, transparent 1px 44px) !important;
+  box-shadow: inset 0 0 100px rgba(106, 31, 168, 0.04);
+}
+body:not([data-ds-dark-theme]) [class*="ST7X_W_composerSeat"] {
+  background:
+    linear-gradient(180deg, transparent, rgba(106, 31, 168, 0.055)),
+    repeating-linear-gradient(90deg, transparent 0 14px, rgba(157, 255, 74, 0.03) 14px 15px) !important;
+}
+body:not([data-ds-dark-theme]) [data-composer-card] {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-color: rgba(106, 31, 168, 0.2) !important;
+  box-shadow:
+    0 14px 34px rgba(75, 29, 122, 0.09),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset !important;
+  backdrop-filter: blur(9px);
+}
+body:not([data-ds-dark-theme]) button[class*="_newSession"] {
+  background: linear-gradient(100deg, #ffffff, #f2ebfa) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+/* the pilot-switch chip is a light glass tab, not a dark console key */
+body:not([data-ds-dark-theme]) .eva-pilot-toggle {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(106, 31, 168, 0.26);
+  color: #4b1d7a;
+  box-shadow: 0 2px 8px rgba(75, 29, 122, 0.08);
+}
+body:not([data-ds-dark-theme]) .eva-pilot-toggle__glyph {
+  color: #6a1fa8;
+}
+body:not([data-ds-dark-theme]) .eva-pilot-toggle:hover,
+body:not([data-ds-dark-theme]) .eva-pilot-toggle[data-open="1"] {
+  color: #2b0d4d;
+  border-color: #6a1fa8;
+  background: rgba(106, 31, 168, 0.1);
+  box-shadow: 0 0 14px rgba(106, 31, 168, 0.14);
+}
+
+/* restore the moving scan sweep in light mode, tuned for a light surface */
+body:not([data-ds-dark-theme]) .eva-hud__scanlines {
+  display: block;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(75, 29, 122, 0.045) 0 1px,
+    transparent 1px 3px
+  );
+  opacity: 0.4;
+}
+body:not([data-ds-dark-theme]) .eva-hud__scan {
+  display: block;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(106, 31, 168, 0.018) 42%,
+    rgba(106, 31, 168, 0.075) 50%,
+    rgba(157, 255, 74, 0.025) 55%,
+    transparent
+  );
+  opacity: 0.9;
+}
+body:not([data-ds-dark-theme]) .eva-hud__vignette {
+  display: block;
+  background: radial-gradient(125% 105% at 50% 45%, transparent 58%, rgba(75, 29, 122, 0.09) 100%);
+  opacity: 0.55;
+}
+body:not([data-ds-dark-theme]) .eva-hud__hr {
+  background: linear-gradient(90deg, transparent, rgba(106, 31, 168, 0.5), transparent);
+}
+body:not([data-ds-dark-theme]) [class*="ST7X_W_scrollBody"]::after {
+  opacity: 0.035;
+  filter: saturate(0.55) contrast(1.05);
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not([data-ds-dark-theme]) .eva-hud__scan {
+    display: none;
+  }
+}
+
+/* stronger, readable light-mode scan sweep */
+body:not([data-ds-dark-theme]) .eva-hud__scan {
+  height: 180px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(106, 31, 168, 0.035) 36%,
+    rgba(106, 31, 168, 0.12) 48%,
+    rgba(157, 255, 74, 0.085) 51%,
+    rgba(106, 31, 168, 0.12) 54%,
+    rgba(106, 31, 168, 0.035) 64%,
+    transparent
+  );
+  opacity: 1;
+}
+body:not([data-ds-dark-theme]) .eva-hud__scan::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(106, 31, 168, 0.5),
+    rgba(157, 255, 74, 0.65),
+    rgba(106, 31, 168, 0.5),
+    transparent
+  );
+  box-shadow: 0 0 14px rgba(106, 31, 168, 0.22);
+}
+body:not([data-ds-dark-theme]) .eva-hud__scanlines {
+  opacity: 0.5;
+}
+body:not([data-ds-dark-theme]) .eva-pilot-toggle {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+/* =====================================================================
+   LIGHT COMFORT PASS
+   Pull the light scheme back from near-white glare: a quieter lavender-grey
+   paper, softer glass surfaces and a much fainter scan sweep.
+   ===================================================================== */
+body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #e3ddeb;
+  --dsw-alias-bg-layer-1: #eee9f4;
+  --dsw-alias-bg-layer-2: #f6f2f9;
+  --dsw-alias-bg-layer-3: #fbf9fc;
+  --dsw-alias-bg-overlay: #fbf9fc;
+  --dsw-specific-sidebar-fill: #ddd3e7;
+  --dsw-specific-input-major: #f7f4fa;
+  --dsw-alias-border-l1: #cbbfda;
+  --dsw-alias-border-l2: #b4a3c9;
+  background-color: #e3ddeb;
+  background-image:
+    radial-gradient(1200px 720px at 16% -18%, rgba(96, 57, 140, 0.1), transparent 66%),
+    radial-gradient(900px 620px at 94% 116%, rgba(62, 85, 146, 0.045), transparent 68%),
+    repeating-linear-gradient(0deg, rgba(75, 29, 122, 0.028) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(75, 29, 122, 0.028) 0 1px, transparent 1px 46px);
+}
+body:not([data-ds-dark-theme]) [class*="_sidebarCol"] {
+  background-color: #ddd3e7 !important;
+  background-image:
+    radial-gradient(120% 52% at 0% 0%, rgba(96, 57, 140, 0.12), transparent 64%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 34%) !important;
+}
+body:not([data-ds-dark-theme]) header[class*="_header"] {
+  background: linear-gradient(180deg, rgba(246, 242, 249, 0.55), rgba(246, 242, 249, 0)) !important;
+  border-bottom-color: rgba(96, 57, 140, 0.16) !important;
+}
+body:not([data-ds-dark-theme]) [class*="ST7X_W_scrollBody"] {
+  background-image:
+    radial-gradient(82% 52% at 50% 0%, rgba(248, 245, 251, 0.42), transparent 70%),
+    radial-gradient(74% 48% at 50% 112%, rgba(96, 57, 140, 0.04), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(75, 29, 122, 0.025) 0 1px, transparent 1px 44px) !important;
+  box-shadow: inset 0 0 100px rgba(96, 57, 140, 0.025);
+}
+body:not([data-ds-dark-theme]) [data-composer-card] {
+  background: rgba(249, 246, 252, 0.86) !important;
+  border-color: rgba(96, 57, 140, 0.17) !important;
+  box-shadow:
+    0 12px 28px rgba(59, 43, 78, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.66) inset !important;
+}
+body:not([data-ds-dark-theme]) button[class*="_newSession"] {
+  background: linear-gradient(100deg, #faf8fd, #eee8f5) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+body:not([data-ds-dark-theme]) .eva-pilot-toggle {
+  background: rgba(248, 245, 251, 0.8);
+  border-color: rgba(96, 57, 140, 0.22);
+  box-shadow: 0 2px 7px rgba(59, 43, 78, 0.06);
+}
+body:not([data-ds-dark-theme]) .eva-hud__scan {
+  height: 160px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(96, 57, 140, 0.025) 40%,
+    rgba(96, 57, 140, 0.065) 49%,
+    rgba(120, 145, 85, 0.035) 51%,
+    rgba(96, 57, 140, 0.065) 52%,
+    rgba(96, 57, 140, 0.025) 62%,
+    transparent
+  );
+  opacity: 0.9;
+}
+body:not([data-ds-dark-theme]) .eva-hud__scan::before {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(96, 57, 140, 0.24),
+    rgba(120, 145, 85, 0.26),
+    rgba(96, 57, 140, 0.24),
+    transparent
+  );
+  box-shadow: 0 0 10px rgba(96, 57, 140, 0.1);
+}
+body:not([data-ds-dark-theme]) .eva-hud__scanlines {
+  opacity: 0.32;
+}
+body:not([data-ds-dark-theme]) .eva-hud__vignette {
+  opacity: 0.45;
+}
+body:not([data-ds-dark-theme]) .eva-hero__glow {
+  background: radial-gradient(circle, rgba(96, 57, 140, 0.18), transparent 72%);
+}

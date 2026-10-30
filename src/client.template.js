@@ -2043,6 +2043,7 @@ window.__ModuleLoader__.load({
           'data-berserk': berserk ? '1' : '0',
           'aria-hidden': true,
         },
+          h('span', { className: 'eva-drag-strip', 'aria-hidden': true }),
           h('span', { className: 'eva-hud__hr eva-hud__hr--top' }),
           h('span', { className: 'eva-hud__hr eva-hud__hr--bottom' }),
           h('span', { className: 'eva-corner eva-corner--tl' }),

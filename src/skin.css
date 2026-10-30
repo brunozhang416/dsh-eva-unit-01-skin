@@ -6609,3 +6609,26 @@ body:not([data-ds-dark-theme]) .eva-hud__vignette {
 body:not([data-ds-dark-theme]) .eva-hero__glow {
   background: radial-gradient(circle, rgba(96, 57, 140, 0.18), transparent 72%);
 }
+
+/* =====================================================================
+   DESKTOP WINDOW DRAG GUARD
+   The HUD is a full-viewport fixed layer.  On Windows the host builds its
+   draggable titlebar from a frame pseudo-element; keep an explicit drag
+   strip above the HUD so the frameless window can always be moved.  The
+   right 150px is left clear for the native minimize/maximize/close keys.
+   ===================================================================== */
+.eva-drag-strip { display: none; }
+
+[data-windows-titlebar] .eva-drag-strip {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 150px;
+  height: var(--dsh-windows-titlebar-height, 32px);
+  z-index: 99999;
+  background: transparent;
+  pointer-events: auto;
+  -webkit-app-region: drag;
+  app-region: drag;
+}

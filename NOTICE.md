@@ -75,6 +75,13 @@ owner's request and is not covered by this repository's MIT license.
 owner. It is embedded in the client bundle at the owner's request and is not
 covered by this repository's MIT license.
 
+
+`assets/voice-clips.json` contains Japanese pilot lines rendered locally with
+the macOS system voices Eddy, Kyoko and Shelley. They are bundled so the pilot
+voice stays Japanese on systems whose default speechSynthesis voice is not
+Japanese. The clips are generated at the owner's request and are not covered
+by this repository's MIT license.
+
 ## Music, voice and the rest
 
 All music and sound effects are synthesised at runtime by `src/audio.js` from an

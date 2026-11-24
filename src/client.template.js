@@ -27,6 +27,7 @@ window.__ModuleLoader__.load({
     const CHAT_BGM_SRC = '__CHAT_BGM_DATA__';
     const ASUKA_SCREAM_SRC = '__ASUKA_SCREAM_DATA__';
     const SHINJI_SCREAM_SRC = '__SHINJI_SCREAM_DATA__';
+    const VOICE_CLIPS = __VOICE_CLIPS__;
     const BGM_REGISTRY = (() => {
       try {
         if (!window.__evaBgmElements) window.__evaBgmElements = new Set();
@@ -542,6 +543,7 @@ window.__ModuleLoader__.load({
             pitch: pilot.voice.pitch,
             volume: pilot.voice.volume,
             voice: pilot.voice.prefer,
+            clip: VOICE_CLIPS[pilot.key + '|' + line.jp] || '',
           });
         } catch (error) {
           /* speech unavailable */

@@ -39,7 +39,7 @@ function createEvaAudio() {
     shimmerGain: null, shimmerSource: null, rumbleGain: null, rumbleSource: null,
     berserkBus: null, berserkPulseIn: null, berserkSirenBus: null, berserkSirenFilter: null,
     angelBus: null, angelTimer: 0, angelNext: 0, angelBeat: 0, wantAngel: false, speechBed: null,
-    speech: { queue: [], active: false, timer: 0, task: null, voice: null },
+    speech: { queue: [], active: false, timer: 0, task: null, clipEl: null, voice: null },
   };
   /* Original 4-bar progression, one chord per bar:
    *   Em(add9) E3 G3 B3 F#4 → Cmaj7 C3 G3 B3 E4
@@ -536,11 +536,70 @@ function createEvaAudio() {
     if (!state.ctx || !state.speechBed) return;
     try { rampParam(state.speechBed.gain, on ? 0.014 : 0.0001, now(), on ? 0.12 : 0.2); } catch (error) {}
   }
+  function fallbackSpeech(task) {
+    var speech = state.speech;
+    if (speech.clipEl) {
+      try { speech.clipEl.pause(); speech.clipEl.currentTime = 0; } catch (error) { /* ignore */ }
+      speech.clipEl = null;
+    }
+    speech.active = false; speech.task = null;
+    if (!task.opts) task.opts = {};
+    task.opts.clip = '';
+    speech.queue.unshift(task);
+    pumpSpeech();
+  }
+
+  function playSpeechClip(task, src) {
+    var speech = state.speech, element;
+    try {
+      element = new W.Audio(src);
+    } catch (error) {
+      fallbackSpeech(task);
+      return;
+    }
+    if (!element || typeof element.play !== 'function') {
+      fallbackSpeech(task);
+      return;
+    }
+    speech.active = true; speech.task = task; speech.clipEl = element;
+    element.loop = false;
+    element.volume = clampNumber(task.opts.volume, 0.9, 0.1, 1);
+    var finished = false;
+    var finish = function (fallback) {
+      if (finished) return;
+      finished = true;
+      if (speech.timer) { try { clearTimeout(speech.timer); } catch (error) {} speech.timer = 0; }
+      if (fallback) {
+        fallbackSpeech(task);
+        return;
+      }
+      if (speech.clipEl) {
+        try { speech.clipEl.pause(); } catch (error) { /* ignore */ }
+      }
+      speech.clipEl = null;
+      speech.active = false; speech.task = null;
+      speechBed(false); setDuck(false);
+      try { task.resolve(); } catch (error) {}
+      pumpSpeech();
+    };
+    element.onended = function () { finish(false); };
+    element.onerror = function () { finish(true); };
+    speech.timer = setTimeout(function () { finish(true); }, 15000);
+    speechBed(true); setDuck(true);
+    try {
+      var played = element.play();
+      if (played && typeof played.catch === 'function') played.catch(function () { finish(true); });
+    } catch (error) {
+      finish(true);
+    }
+  }
+
   function pumpSpeech() {
     var speech = state.speech;
     if (state.disposed || speech.active) return;
     var task = speech.queue.shift();
     if (!task) { setDuck(false); return; }
+    if (task.opts && task.opts.clip) { playSpeechClip(task, task.opts.clip); return; }
     try {
       var synth = W.speechSynthesis;
       if (!synth) { task.resolve(); pumpSpeech(); return; }
@@ -575,6 +634,10 @@ function createEvaAudio() {
     var speech = state.speech;
     if (speech.timer) { try { clearTimeout(speech.timer); } catch (error) {} speech.timer = 0; }
     try { if (W && W.speechSynthesis) W.speechSynthesis.cancel(); } catch (error) {}
+    if (speech.clipEl) {
+      try { speech.clipEl.pause(); speech.clipEl.currentTime = 0; } catch (error) { /* ignore */ }
+      speech.clipEl = null;
+    }
     var pending = speech.queue.splice(0, speech.queue.length);
     if (speech.task) { pending.unshift(speech.task); speech.task = null; }
     speech.active = false;

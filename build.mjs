@@ -56,6 +56,9 @@ for (const [name, svg] of Object.entries(art)) {
   if (!/^<svg[\s>]/i.test(sanitize(svg))) throw new Error(`art/${name}.svg is not an SVG document`);
 }
 
+const voiceClips = read('assets/voice-clips.json');
+JSON.parse(voiceClips);
+
 const audioSource = optional('src/audio.js', `
 function createEvaAudio() {
   const noop = () => {};
@@ -90,6 +93,7 @@ const generated = template
   .replace('__LAUNCH_BGM_DATA__', dataUri('assets/evangelion.mp3', 'audio/mpeg'))
   .replace('__CHAT_BGM_DATA__', dataUri('assets/decisive-battle.mp3', 'audio/mpeg'))
   .replace('__ASUKA_SCREAM_DATA__', dataUri('assets/asuka-scream.mp3', 'audio/mpeg'))
+  .replace('__VOICE_CLIPS__', voiceClips)
   .replace('__SHINJI_SCREAM_DATA__', dataUri('assets/shinji-scream.mp3', 'audio/mpeg'))
   .replace('/* __EVA_AUDIO__ */', audioSource);
 
